@@ -33,6 +33,8 @@ Provider xác định locale theo thứ tự:
 
 `RootLayout` bọc ứng dụng bằng provider. Provider đồng bộ `document.documentElement.lang`, để các component truy xuất locale qua hook `useI18n()`, và cung cấp `formatDate` dựa vào locale đang chọn.
 
+Mọi chuỗi giao diện phải được React render qua `t(...)` hoặc helper dịch thuần. Provider **không được** dùng `MutationObserver`, `node.data`, `setAttribute` hay bất kỳ thao tác nào khác để quét và sửa DOM sau khi React render. Điều này giữ nguyên quyền sở hữu DOM của React, tránh lỗi reconciliation khi component thay đổi trạng thái (ví dụ nút OAuth đổi icon thành loading).
+
 Thành phần chọn ngôn ngữ xuất hiện trong `HeaderActions`, nên có mặt ở login và thanh điều hướng. Nhãn hiển thị là `中文` và `Tiếng Việt`; đổi ngôn ngữ có hiệu lực lập tức và được lưu cho phiên sau.
 
 ## Luồng request và backend
@@ -55,6 +57,10 @@ Các lỗi chủ động tạo từ route, service và validation sẽ chuyển 
 - Các trường trạng thái backend vẫn giữ giá trị gốc; frontend map giá trị không xác định thành nhãn gốc thay vì làm hỏng UI.
 - Các thông báo lỗi include chi tiết kỹ thuật chỉ dịch phần tiền tố do ứng dụng tạo, giữ nguyên status/code/chi tiết upstream.
 
+## Dialog nhập tài khoản
+
+Dialog nhập tài khoản có bố cục cột với chiều cao tối đa theo viewport. Header và footer luôn nằm trong dialog; phần thân là vùng `overflow-y-auto` duy nhất. Footer chứa nút hủy và thao tác chính, không bị che bởi nội dung dài như URL OAuth hoặc textarea callback. Bố cục phải hoạt động ở màn hình thấp và khi DevTools làm hẹp viewport.
+
 ## Kiểm thử
 
 - Unit test frontend: nhận diện locale browser, ưu tiên stored preference, lưu locale khi đổi, fallback dictionary và formatting ngày giờ.
@@ -62,6 +68,8 @@ Các lỗi chủ động tạo từ route, service và validation sẽ chuyển 
 - Unit test backend: parser header, fallback locale, lỗi đại diện (`invalid key`, `admin required`, `not found`, validation) ở cả hai ngôn ngữ.
 - Regression test: envelope lỗi OpenAI và Anthropic giữ nguyên schema/status code.
 - Smoke test UI: login hiển thị được cả hai ngôn ngữ, bộ chọn đổi ngôn ngữ không mất session.
+- Smoke test OAuth dialog: khi URL ủy quyền và callback dài, nội dung cuộn được và nút `Hoàn tất nhập` vẫn luôn truy cập được.
+- Regression test: bấm `Mở trang ủy quyền` khi locale là tiếng Việt không tạo lỗi `insertBefore`/`NotFoundError`.
 - Chạy type-check/lint hoặc Next build, Python tests phù hợp và kiểm tra các chuỗi người dùng còn hard-code.
 
 ## Tiêu chí hoàn thành
