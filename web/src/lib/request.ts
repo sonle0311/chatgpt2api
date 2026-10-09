@@ -1,6 +1,7 @@
 import axios, {AxiosError, type AxiosRequestConfig} from "axios";
 
 import webConfig from "@/constants/common-env";
+import { getStoredLocale } from "@/i18n";
 import {clearStoredAuthSession, getStoredAuthKey} from "@/store/auth";
 
 type RequestConfig = AxiosRequestConfig & {
@@ -38,6 +39,9 @@ request.interceptors.request.use(async (config) => {
     const headers = {...(nextConfig.headers || {})} as Record<string, string>;
     if (authKey && !headers.Authorization) {
         headers.Authorization = `Bearer ${authKey}`;
+    }
+    if (!headers["Accept-Language"]) {
+        headers["Accept-Language"] = getStoredLocale() || (typeof navigator !== "undefined" && navigator.language.toLowerCase().startsWith("vi") ? "vi-VN" : "zh-CN");
     }
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error

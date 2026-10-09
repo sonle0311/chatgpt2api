@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from services.protocol.error_response import anthropic_error_response, openai_error_response
+from services.i18n import localize_error_detail
 
 
 def _is_openai_compatible_path(path: str) -> bool:
@@ -23,9 +24,10 @@ def _compatible_error_response(
     status_code: int,
     headers: dict[str, str] | None = None,
 ) -> JSONResponse:
+    localized_detail = localize_error_detail(detail)
     if _is_anthropic_messages_path(request.url.path):
-        return anthropic_error_response(detail, status_code, headers=headers)
-    return openai_error_response(detail, status_code, headers=headers)
+        return anthropic_error_response(localized_detail, status_code, headers=headers)
+    return openai_error_response(localized_detail, status_code, headers=headers)
 
 
 def install_exception_handlers(app: FastAPI) -> None:
@@ -35,7 +37,7 @@ def install_exception_handlers(app: FastAPI) -> None:
             return _compatible_error_response(request, exc.detail, exc.status_code, exc.headers)
         return JSONResponse(
             status_code=exc.status_code,
-            content={"detail": jsonable_encoder(exc.detail)},
+            content={"detail": jsonable_encoder(localize_error_detail(exc.detail))},
             headers=exc.headers,
         )
 
@@ -43,4 +45,4 @@ def install_exception_handlers(app: FastAPI) -> None:
     async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
         if _is_openai_compatible_path(request.url.path):
             return _compatible_error_response(request, exc.errors(), 422)
-        return JSONResponse(status_code=422, content={"detail": jsonable_encoder(exc.errors())})
+        return JSONResponse(status_code=422, content={"detail": jsonable_encoder(localize_error_detail(exc.errors()))})

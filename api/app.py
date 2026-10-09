@@ -13,6 +13,7 @@ from api.support import resolve_web_asset, start_limited_account_watcher
 from services.backup_service import backup_service
 from services.config import config
 from services.image_service import start_image_cleanup_scheduler
+from services.i18n import reset_request_locale, set_request_locale
 
 
 def create_app() -> FastAPI:
@@ -34,6 +35,15 @@ def create_app() -> FastAPI:
             backup_service.stop()
 
     app = FastAPI(title="chatgpt2api", version=app_version, lifespan=lifespan)
+
+    @app.middleware("http")
+    async def locale_middleware(request, call_next):
+        token = set_request_locale(request.headers.get("accept-language"))
+        try:
+            return await call_next(request)
+        finally:
+            reset_request_locale(token)
+
     install_exception_handlers(app)
     app.add_middleware(
         CORSMiddleware,
