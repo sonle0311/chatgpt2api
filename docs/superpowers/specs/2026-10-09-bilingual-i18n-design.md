@@ -2,7 +2,7 @@
 
 ## Mục tiêu
 
-Thêm lựa chọn ngôn ngữ `zh-CN` và `vi-VN` cho toàn bộ giao diện web và các thông báo lỗi do backend tạo ra. Ứng dụng dùng ngôn ngữ trình duyệt cho người dùng mới, nhưng ưu tiên lựa chọn đã lưu sau khi người dùng tự đổi ngôn ngữ.
+Thêm lựa chọn ngôn ngữ `zh-CN` và `vi-VN` cho toàn bộ giao diện web và các thông báo lỗi do backend tạo ra. Tiếng Việt là ngôn ngữ mặc định cho mọi người dùng mới, bất kể ngôn ngữ trình duyệt. Sau khi người dùng tự đổi ngôn ngữ, lựa chọn đã lưu được ưu tiên ở các lần mở sau.
 
 Thay đổi không được làm thay đổi API fields, trạng thái dữ liệu lưu trữ, tên model, nội dung prompt hoặc định dạng lỗi tương thích OpenAI/Anthropic.
 
@@ -27,13 +27,14 @@ Tạo module i18n nội bộ, không bổ sung dependency. Nó gồm:
 
 Provider xác định locale theo thứ tự:
 
-1. Locale người dùng đã lưu.
-2. `navigator.languages` hoặc `navigator.language`, map các biến thể tiếng Việt sang `vi-VN`; các giá trị khác dùng `zh-CN`.
-3. `zh-CN` nếu browser không cung cấp giá trị hợp lệ.
+1. Locale người dùng đã lưu qua nút chọn ngôn ngữ.
+2. `vi-VN` nếu chưa có lựa chọn đã lưu.
+
+Không dùng `navigator.language` hoặc `navigator.languages` để chọn locale. Nút chọn ngôn ngữ vẫn cho phép chuyển sang `zh-CN` hoặc quay về `vi-VN`, và lưu lựa chọn này cho phiên sau.
 
 `RootLayout` bọc ứng dụng bằng provider. Provider đồng bộ `document.documentElement.lang`, để các component truy xuất locale qua hook `useI18n()`, và cung cấp `formatDate` dựa vào locale đang chọn.
 
-Mọi chuỗi giao diện phải được React render qua `t(...)` hoặc helper dịch thuần. Provider **không được** dùng `MutationObserver`, `node.data`, `setAttribute` hay bất kỳ thao tác nào khác để quét và sửa DOM sau khi React render. Điều này giữ nguyên quyền sở hữu DOM của React, tránh lỗi reconciliation khi component thay đổi trạng thái (ví dụ nút OAuth đổi icon thành loading).
+Mọi chuỗi giao diện phải được React render qua `t(...)` hoặc helper dịch thuần. Provider **không được** dùng `MutationObserver`, `node.data`, `setAttribute` hay bất kỳ thao tác nào khác để quét và sửa DOM sau khi React render. Điều này giữ nguyên quyền sở hữu DOM của React, tránh lỗi reconciliation khi component thay đổi trạng thái (ví dụ nút OAuth đổi icon thành loading). Việc chuyển đổi được thực hiện lần lượt trên tất cả trang và component có chuỗi hiển thị; không dựa vào cơ chế dịch DOM toàn cục.
 
 Thành phần chọn ngôn ngữ xuất hiện trong `HeaderActions`, nên có mặt ở login và thanh điều hướng. Nhãn hiển thị là `中文` và `Tiếng Việt`; đổi ngôn ngữ có hiệu lực lập tức và được lưu cho phiên sau.
 
@@ -63,7 +64,7 @@ Dialog nhập tài khoản có bố cục cột với chiều cao tối đa theo
 
 ## Kiểm thử
 
-- Unit test frontend: nhận diện locale browser, ưu tiên stored preference, lưu locale khi đổi, fallback dictionary và formatting ngày giờ.
+- Unit test frontend: mặc định `vi-VN`, ưu tiên stored preference, lưu locale khi đổi, fallback dictionary và formatting ngày giờ.
 - Unit test request: Axios thêm `Accept-Language` đúng và không ghi đè header caller đặt rõ ràng.
 - Unit test backend: parser header, fallback locale, lỗi đại diện (`invalid key`, `admin required`, `not found`, validation) ở cả hai ngôn ngữ.
 - Regression test: envelope lỗi OpenAI và Anthropic giữ nguyên schema/status code.
@@ -74,7 +75,7 @@ Dialog nhập tài khoản có bố cục cột với chiều cao tối đa theo
 
 ## Tiêu chí hoàn thành
 
-1. Người dùng mới dùng tiếng Việt nếu browser ưu tiên tiếng Việt; ngược lại dùng tiếng Trung.
+1. Người dùng mới luôn dùng tiếng Việt, không phụ thuộc ngôn ngữ trình duyệt.
 2. Người dùng có thể đổi Trung/Việt ở login và sau khi đăng nhập; lựa chọn được giữ qua reload.
 3. Toàn bộ chuỗi UI và toast do frontend tạo có bản dịch cho hai ngôn ngữ.
 4. Các thông báo backend chủ động tạo trả đúng ngôn ngữ theo `Accept-Language` mà vẫn giữ API contract.
