@@ -36,6 +36,7 @@ import {
   type AccountImportPayload,
   type OAuthLoginStartResponse,
 } from "@/lib/api";
+import { LocalizedText, useI18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 type ImportMethod = "menu" | "token" | "session" | "codex-auth" | "account-json" | "oauth";
@@ -171,8 +172,8 @@ function MethodCard({
             <Icon className="size-5" />
           </div>
           <div className="space-y-1">
-            <div className="text-sm font-semibold text-stone-900">{title}</div>
-            <div className="text-sm leading-6 text-stone-500">{description}</div>
+            <div className="text-sm font-semibold text-stone-900"><LocalizedText>{title}</LocalizedText></div>
+            <div className="text-sm leading-6 text-stone-500"><LocalizedText>{description}</LocalizedText></div>
           </div>
         </CardContent>
       </Card>
@@ -182,6 +183,7 @@ function MethodCard({
 
 export function AccountImportDialog({ disabled, onImported }: AccountImportDialogProps) {
   const router = useRouter();
+  const { text } = useI18n();
   const [open, setOpen] = useState(false);
   const [method, setMethod] = useState<ImportMethod>("menu");
   const [tokenInput, setTokenInput] = useState("");
@@ -222,7 +224,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
     const normalizedTokens = tokens.map((item) => item.trim()).filter(Boolean);
 
     if (normalizedTokens.length === 0) {
-      toast.error("请先提供至少一个可用 Token");
+      toast.error(text("请先提供至少一个可用 Token"));
       return;
     }
 
@@ -236,15 +238,15 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
       if ((data.errors?.length ?? 0) > 0) {
         const firstError = data.errors?.[0]?.error;
         toast.error(
-          `${successText ?? "导入完成"}，新增 ${data.added ?? 0} 个，已刷新 ${data.refreshed ?? 0} 个，失败 ${data.errors?.length ?? 0} 个${firstError ? `，首个错误：${firstError}` : ""}`,
+          `${successText ?? text("导入完成")}${text("，新增 ")}${data.added ?? 0}${text(" 个，已刷新 ")}${data.refreshed ?? 0}${text(" 个，失败 ")}${data.errors?.length ?? 0}${text(" 个")}${firstError ? `${text("，首个错误：")}${firstError}` : ""}`,
         );
       } else {
         toast.success(
-          `${successText ?? "导入完成"}，新增 ${data.added ?? 0} 个，跳过 ${data.skipped ?? 0} 个重复项，已自动刷新账号信息`,
+          `${successText ?? text("导入完成")}${text("，新增 ")}${data.added ?? 0}${text(" 个，跳过 ")}${data.skipped ?? 0}${text(" 个重复项，已自动刷新账号信息")}`,
         );
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "导入账户失败";
+      const message = error instanceof Error ? error.message : text("导入账户失败");
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -252,7 +254,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
   };
 
   const handleImportTokenText = async () => {
-    await submitTokens(splitTokens(tokenInput), "Access Token 导入完成");
+    await submitTokens(splitTokens(tokenInput), text("Access Token 导入完成"));
   };
 
   // 起授权：拿 authorize URL，立刻在新窗口打开，方便用户登录
@@ -265,9 +267,9 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
       if (typeof window !== "undefined") {
         window.open(data.authorize_url, "_blank", "noopener,noreferrer");
       }
-      toast.success("已打开 OpenAI 授权页面，请在登录后复制 callback URL 回来");
+      toast.success(text("已打开 OpenAI 授权页面，请在登录后复制 callback URL 回来"));
     } catch (error) {
-      const message = error instanceof Error ? error.message : "OAuth 起始失败";
+      const message = error instanceof Error ? error.message : text("OAuth 起始失败");
       toast.error(message);
     } finally {
       setOauthStarting(false);
@@ -277,12 +279,12 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
   // 用粘贴回来的 callback URL 完成换 token + 落盘
   const handleFinishOAuth = async () => {
     if (!oauthSession) {
-      toast.error("请先点击\"打开授权页面\"获取 session");
+      toast.error(text("请先点击\"打开授权页面\"获取 session"));
       return;
     }
     const trimmed = oauthCallbackInput.trim();
     if (!trimmed) {
-      toast.error("请粘贴 callback URL 或 code");
+      toast.error(text("请粘贴 callback URL 或 code"));
       return;
     }
 
@@ -296,15 +298,15 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
       if ((data.errors?.length ?? 0) > 0) {
         const firstError = data.errors?.[0]?.error;
         toast.error(
-          `OAuth 登录完成，新增 ${data.added ?? 0} 个，已刷新 ${data.refreshed ?? 0} 个，失败 ${data.errors?.length ?? 0} 个${firstError ? `，首个错误：${firstError}` : ""}`,
+          `${text("OAuth 登录完成")}${text("，新增 ")}${data.added ?? 0}${text(" 个，已刷新 ")}${data.refreshed ?? 0}${text(" 个，失败 ")}${data.errors?.length ?? 0}${text(" 个")}${firstError ? `${text("，首个错误：")}${firstError}` : ""}`,
         );
       } else {
         toast.success(
-          `OAuth 登录完成，新增 ${data.added ?? 0} 个，跳过 ${data.skipped ?? 0} 个重复项，已自动刷新账号信息`,
+          `${text("OAuth 登录完成")}${text("，新增 ")}${data.added ?? 0}${text(" 个，跳过 ")}${data.skipped ?? 0}${text(" 个重复项，已自动刷新账号信息")}`,
         );
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "OAuth 换 token 失败";
+      const message = error instanceof Error ? error.message : text("OAuth 换 token 失败");
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -319,12 +321,12 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(oauthSession.authorize_url);
-        toast.success("授权 URL 已复制到剪贴板");
+        toast.success(text("授权 URL 已复制到剪贴板"));
       } else {
-        toast.error("当前环境不支持自动复制，请手动选择并复制");
+        toast.error(text("当前环境不支持自动复制，请手动选择并复制"));
       }
     } catch {
-      toast.error("复制失败，请手动选择并复制");
+      toast.error(text("复制失败，请手动选择并复制"));
     }
   };
 
@@ -341,7 +343,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
       const tokens = splitTokens(content);
 
       if (tokens.length === 0) {
-        toast.error("TXT 文件里没有读取到有效 Token");
+        toast.error(text("TXT 文件里没有读取到有效 Token"));
         return;
       }
 
@@ -349,16 +351,16 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
         const next = [...splitTokens(prev), ...tokens];
         return next.join("\n");
       });
-      toast.success(`已从 ${file.name} 读取 ${tokens.length} 个 Token`);
+      toast.success(`${text("已从 ")}${file.name}${text(" 读取 ")}${tokens.length}${text(" 个 Token")}`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "读取 TXT 文件失败";
+      const message = error instanceof Error ? error.message : text("读取 TXT 文件失败");
       toast.error(message);
     }
   };
 
   const handleImportSessionJson = async () => {
     if (!sessionInput.trim()) {
-      toast.error("请先粘贴完整 Session JSON");
+      toast.error(text("请先粘贴完整 Session JSON"));
       return;
     }
 
@@ -367,20 +369,20 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
       const token = getSessionAccessToken(payload);
 
       if (!token) {
-        toast.error("未从 Session JSON 中提取到 accessToken");
+        toast.error(text("未从 Session JSON 中提取到 accessToken"));
         return;
       }
 
-      await submitTokens([token], "Session JSON 导入完成");
+      await submitTokens([token], text("Session JSON 导入完成"));
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Session JSON 解析失败";
+      const message = error instanceof Error ? error.message : text("Session JSON 解析失败");
       toast.error(message);
     }
   };
 
   const handleImportCodexAuthJson = async () => {
     if (!codexAuthInput.trim()) {
-      toast.error("请先粘贴 Codex 认证 JSON");
+      toast.error(text("请先粘贴 Codex 认证 JSON"));
       return;
     }
 
@@ -389,13 +391,13 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
       const account = getCodexAuthAccount(payload);
 
       if (!account) {
-        toast.error("未从 Codex 认证 JSON 中提取到 access_token");
+        toast.error(text("未从 Codex 认证 JSON 中提取到 access_token"));
         return;
       }
 
-      await submitTokens([account.access_token], "Codex 认证 JSON 导入完成", [account]);
+      await submitTokens([account.access_token], text("Codex 认证 JSON 导入完成"), [account]);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Codex 认证 JSON 解析失败";
+      const message = error instanceof Error ? error.message : text("Codex 认证 JSON 解析失败");
       toast.error(message);
     }
   };
@@ -426,7 +428,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
       const errorCount = results.filter((item) => item.accounts.length === 0).length;
 
       if (parsedAccountCount === 0) {
-        toast.error("这些账号 JSON 文件里没有读取到可用 access_token");
+        toast.error(text("这些账号 JSON 文件里没有读取到可用 access_token"));
         return;
       }
 
@@ -438,7 +440,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
       });
       setConfirmOpen(true);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "读取账号 JSON 文件失败";
+      const message = error instanceof Error ? error.message : text("读取账号 JSON 文件失败");
       toast.error(message);
     }
   };
@@ -456,14 +458,14 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
               className="inline-flex items-center gap-1 text-sm text-stone-500 transition hover:text-stone-800"
             >
               <ArrowLeft className="size-4" />
-              返回导入方式
+              {text("返回导入方式")}
             </button>
-            <span className="text-xs text-stone-400">当前识别 {tokenCount} 个 Token</span>
+            <span className="text-xs text-stone-400">{text("当前识别 ")}{tokenCount}{text(" 个 Token")}</span>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-700">Access Token 列表</label>
+            <label className="text-sm font-medium text-stone-700">{text("Access Token 列表")}</label>
             <Textarea
-              placeholder="每行一个 Access Token..."
+              placeholder={text("每行一个 Access Token...")}
               value={tokenInput}
               onChange={(event) => setTokenInput(event.target.value)}
               className="min-h-56 resize-none rounded-xl border-stone-200"
@@ -472,8 +474,8 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
           <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
-                <div className="text-sm font-medium text-stone-800">从 TXT 文件导入</div>
-                <div className="text-sm leading-6 text-stone-500">支持 `.txt`，文件内容也是一行一个 Token。</div>
+                <div className="text-sm font-medium text-stone-800">{text("从 TXT 文件导入")}</div>
+                <div className="text-sm leading-6 text-stone-500">{text("支持 `.txt`，文件内容也是一行一个 Token。")}</div>
               </div>
               <Button
                 type="button"
@@ -483,7 +485,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
                 disabled={isSubmitting}
               >
                 <FileText className="size-4" />
-                选择 TXT
+                {text("选择 TXT")}
               </Button>
             </div>
           </div>
@@ -507,10 +509,10 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
             className="inline-flex items-center gap-1 text-sm text-stone-500 transition hover:text-stone-800"
           >
             <ArrowLeft className="size-4" />
-            返回导入方式
+            {text("返回导入方式")}
           </button>
           <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm leading-6 text-stone-600">
-            打开
+            {text("打开")}
             {" "}
             <a
               href={sessionUrl}
@@ -521,18 +523,18 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
               {sessionUrl}
               <ExternalLink className="size-3.5" />
             </a>
-            ，复制页面返回的完整 JSON，系统会自动提取其中的 `accessToken` 导入。
+            {text("，复制页面返回的完整 JSON，系统会自动提取其中的 `accessToken` 导入。")}
           </div>
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-            <div className="font-medium">风险提示</div>
+            <div className="font-medium">{text("风险提示")}</div>
             <div>
-              不要使用自己的大号，尽量使用不常用的小号进行导入，避免出现封号风险。本项目不承担任何封号风险责任。
+              {text("不要使用自己的大号，尽量使用不常用的小号进行导入，避免出现封号风险。本项目不承担任何封号风险责任。")}
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-700">Session JSON</label>
+            <label className="text-sm font-medium text-stone-700">{text("Session JSON")}</label>
             <Textarea
-              placeholder='粘贴完整 JSON，例如包含 "accessToken" 的对象...'
+              placeholder={text('粘贴完整 JSON，例如包含 "accessToken" 的对象...')}
               value={sessionInput}
               onChange={(event) => setSessionInput(event.target.value)}
               className="min-h-56 resize-none rounded-xl border-stone-200 font-mono text-xs"
@@ -551,19 +553,19 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
             className="inline-flex items-center gap-1 text-sm text-stone-500 transition hover:text-stone-800"
           >
             <ArrowLeft className="size-4" />
-            返回导入方式
+            {text("返回导入方式")}
           </button>
           <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm leading-6 text-stone-600 space-y-2">
-            <div className="font-medium text-stone-800">操作步骤</div>
+            <div className="font-medium text-stone-800">{text("操作步骤")}</div>
             <ol className="list-decimal pl-5 space-y-1">
-              <li>（可选）填写你 ChatGPT 账号的邮箱，登录页会预填。</li>
-              <li>点击下方"打开授权页面"，在新标签里登录自己的 ChatGPT 账号。</li>
-              <li>登录完成后浏览器会跳到 <code className="rounded bg-stone-200 px-1">platform.openai.com/auth/callback?code=...</code>。立刻从地址栏复制整段 URL（或开 F12 在 Network 里抓到 callback 那一行，右键 Copy → Copy URL）。</li>
-              <li>把 callback URL 粘到下面输入框，点"完成导入"。</li>
+              <li>{text("（可选）填写你 ChatGPT 账号的邮箱，登录页会预填。")}</li>
+              <li>{text("点击下方\"打开授权页面\"，在新标签里登录自己的 ChatGPT 账号。")}</li>
+              <li>{text("登录完成后浏览器会跳到 ")}<code className="rounded bg-stone-200 px-1">platform.openai.com/auth/callback?code=...</code>{text("。立刻从地址栏复制整段 URL（或开 F12 在 Network 里抓到 callback 那一行，右键 Copy → Copy URL）。")}</li>
+              <li>{text("把 callback URL 粘到下面输入框，点\"完成导入\"。")}</li>
             </ol>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-700">邮箱（可选预填）</label>
+            <label className="text-sm font-medium text-stone-700">{text("邮箱（可选预填）")}</label>
             <input
               type="email"
               placeholder="you@example.com"
@@ -581,7 +583,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
               disabled={oauthStarting}
             >
               {oauthStarting ? <LoaderCircle className="size-4 animate-spin" /> : <ExternalLink className="size-4" />}
-              打开授权页面
+              {text("打开授权页面")}
             </Button>
           ) : (
             <div className="space-y-3">
@@ -596,7 +598,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
                   onClick={() => void handleCopyAuthorizeUrl()}
                 >
                   <Copy className="size-4" />
-                  复制授权 URL
+                  {text("复制授权 URL")}
                 </Button>
                 <Button
                   type="button"
@@ -605,7 +607,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
                   onClick={() => window.open(oauthSession.authorize_url, "_blank", "noopener,noreferrer")}
                 >
                   <ExternalLink className="size-4" />
-                  再次打开
+                  {text("再次打开")}
                 </Button>
                 <Button
                   type="button"
@@ -616,11 +618,11 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
                     setOauthCallbackInput("");
                   }}
                 >
-                  重新生成
+                  {text("重新生成")}
                 </Button>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-stone-700">粘贴 callback URL（或仅 code）</label>
+                <label className="text-sm font-medium text-stone-700">{text("粘贴 callback URL（或仅 code）")}</label>
                 <Textarea
                   placeholder={"https://platform.openai.com/auth/callback?code=...&state=..."}
                   value={oauthCallbackInput}
@@ -631,10 +633,10 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
             </div>
           )}
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-            <div className="font-medium">注意</div>
+            <div className="font-medium">{text("注意")}</div>
             <div>
-              授权码（code）只能使用一次。如果浏览器的 callback 页加载完成、显示了 OpenAI 的错误页，那 code 大概率已经被消耗，
-              请点击"重新生成"再走一次。整个流程在 10 分钟内完成即可。
+              {text("授权码（code）只能使用一次。如果浏览器的 callback 页加载完成、显示了 OpenAI 的错误页，那 code 大概率已经被消耗，")}
+              {text("请点击\"重新生成\"再走一次。整个流程在 10 分钟内完成即可。")}
             </div>
           </div>
         </div>
@@ -649,15 +651,15 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
             onClick={() => setMethod("menu")}
             className="inline-flex items-center gap-1 text-sm text-stone-500 transition hover:text-stone-800"
           >
-            <ArrowLeft className="size-4" />
-            返回导入方式
+              <ArrowLeft className="size-4" />
+            {text("返回导入方式")}
           </button>
           <div className="rounded-2xl border border-dashed border-stone-200 bg-stone-50 p-5">
             <div className="space-y-2">
-              <div className="text-sm font-medium text-stone-800">选择本地账号 JSON 文件</div>
+              <div className="text-sm font-medium text-stone-800">{text("选择本地账号 JSON 文件")}</div>
               <div className="text-sm leading-6 text-stone-500">
-                支持本项目导出的单账号对象或全部账号数组，也兼容每个文件一个账号对象的 CPA JSON。
-                系统会自动提取 `access_token` 或 `accessToken`。
+                {text("支持本项目导出的单账号对象或全部账号数组，也兼容每个文件一个账号对象的 CPA JSON。")}
+                {text("系统会自动提取 `access_token` 或 `accessToken`。")}
               </div>
             </div>
             <Button
@@ -667,7 +669,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
               disabled={isSubmitting}
             >
               <Files className="size-4" />
-              选择 JSON 文件
+              {text("选择 JSON 文件")}
             </Button>
           </div>
           <input
@@ -680,8 +682,8 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
           />
           {pendingAccountJsonImport ? (
             <div className="rounded-2xl border border-stone-200 bg-white p-4 text-sm leading-6 text-stone-600">
-              最近一次读取到 {pendingAccountJsonImport.parsedAccountCount} 个 Token
-              {pendingAccountJsonImport.errorCount > 0 ? `，另有 ${pendingAccountJsonImport.errorCount} 个文件未提取成功` : ""}。
+              {text("最近一次读取到 ")}{pendingAccountJsonImport.parsedAccountCount}{text(" 个 Token")}
+              {pendingAccountJsonImport.errorCount > 0 ? <>{text("，另有 ")}{pendingAccountJsonImport.errorCount}{text(" 个文件未提取成功")}</> : ""}{text("。")}
             </div>
           ) : null}
         </div>
@@ -696,13 +698,13 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
             onClick={() => setMethod("menu")}
             className="inline-flex items-center gap-1 text-sm text-stone-500 transition hover:text-stone-800"
           >
-            <ArrowLeft className="size-4" />
-            返回导入方式
+              <ArrowLeft className="size-4" />
+            {text("返回导入方式")}
           </button>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-700">Codex 认证 JSON</label>
+            <label className="text-sm font-medium text-stone-700">{text("Codex 认证 JSON")}</label>
             <Textarea
-              placeholder='粘贴包含 "access_token"、"refresh_token"、"id_token" 的 Codex 认证 JSON...'
+              placeholder={text('粘贴包含 "access_token"、"refresh_token"、"id_token" 的 Codex 认证 JSON...')}
               value={codexAuthInput}
               onChange={(event) => setCodexAuthInput(event.target.value)}
               className="min-h-64 resize-none rounded-xl border-stone-200 font-mono text-xs"
@@ -779,48 +781,50 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
           disabled={disabled}
         >
           <Upload className="size-4" />
-          导入
+          {text("导入")}
         </Button>
-        <DialogContent showCloseButton={false} className="rounded-2xl p-6">
-          <DialogHeader className="gap-2">
+        <DialogContent showCloseButton={false} className="flex max-h-[calc(100dvh-2rem)] w-[min(92vw,560px)] flex-col gap-0 overflow-hidden rounded-2xl p-0">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
+              <DialogHeader className="gap-2">
             <DialogTitle>
               {method === "menu"
-                ? "导入账户"
+                ? text("导入账户")
                 : method === "token"
-                  ? "导入 Access Token"
-                  : method === "session"
-                    ? "导入 Session JSON"
-                    : method === "codex-auth"
-                      ? "导入 Codex 认证 JSON"
+                  ? text("导入 Access Token")
+                : method === "session"
+                    ? text("导入 Session JSON")
+                  : method === "codex-auth"
+                      ? text("导入 Codex 认证 JSON")
                     : method === "oauth"
-                      ? "OAuth 登录已有账号"
-                      : "导入账号 JSON"}
+                      ? text("OAuth 登录已有账号")
+                      : text("导入账号 JSON")}
             </DialogTitle>
             <DialogDescription className="text-sm leading-6">
               {method === "menu"
-                ? "选择一种导入方式。导入成功后会自动拉取邮箱、类型和额度。"
+                ? text("选择一种导入方式。导入成功后会自动拉取邮箱、类型和额度。")
                 : method === "token"
-                  ? "支持手动粘贴或从 TXT 文件导入，一行一个 Token。"
-                  : method === "session"
-                    ? "粘贴完整 Session JSON，系统会自动提取 accessToken。"
-                    : method === "codex-auth"
-                      ? "粘贴 Codex 认证 JSON，系统会按 codex 来源导入。"
+                  ? text("支持手动粘贴或从 TXT 文件导入，一行一个 Token。")
+                : method === "session"
+                    ? text("粘贴完整 Session JSON，系统会自动提取 accessToken。")
+                  : method === "codex-auth"
+                      ? text("粘贴 Codex 认证 JSON，系统会按 codex 来源导入。")
                     : method === "oauth"
-                      ? "用浏览器跑一遍 OpenAI 标准 OAuth，拿回 refresh_token 后系统会自动续期。"
-                      : "支持读取本项目导出的单账号对象或全部账号数组，并在提交前做数量确认。"}
+                      ? text("用浏览器跑一遍 OpenAI 标准 OAuth，拿回 refresh_token 后系统会自动续期。")
+                      : text("支持读取本项目导出的单账号对象或全部账号数组，并在提交前做数量确认。")}
             </DialogDescription>
-          </DialogHeader>
+              </DialogHeader>
 
-          {renderMethodBody()}
+              <div className="mt-4">{renderMethodBody()}</div>
+          </div>
 
-          <DialogFooter className="pt-2">
+          <DialogFooter className="shrink-0 border-t border-stone-200 bg-white px-6 py-4 dark:border-white/10 dark:bg-stone-950">
             <Button
               variant="secondary"
               className="h-10 rounded-xl bg-stone-100 px-5 text-stone-700 hover:bg-stone-200"
               onClick={() => setOpen(false)}
               disabled={footerDisabled}
             >
-              取消
+              {text("取消")}
             </Button>
             {method === "token" ? (
               <Button
@@ -829,7 +833,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
                 disabled={footerDisabled}
               >
                 {isSubmitting ? <LoaderCircle className="size-4 animate-spin" /> : null}
-                导入 Token
+                {text("导入 Token")}
               </Button>
             ) : null}
             {method === "session" ? (
@@ -839,7 +843,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
                 disabled={footerDisabled}
               >
                 {isSubmitting ? <LoaderCircle className="size-4 animate-spin" /> : null}
-                导入 JSON
+                {text("导入 JSON")}
               </Button>
             ) : null}
             {method === "codex-auth" ? (
@@ -849,7 +853,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
                 disabled={footerDisabled}
               >
                 {isSubmitting ? <LoaderCircle className="size-4 animate-spin" /> : null}
-                导入 JSON
+                {text("导入 JSON")}
               </Button>
             ) : null}
             {method === "oauth" ? (
@@ -862,7 +866,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
                 disabled={footerDisabled || !oauthSession || !oauthCallbackInput.trim()}
               >
                 {isSubmitting ? <LoaderCircle className="size-4 animate-spin" /> : null}
-                完成导入
+                {text("完成导入")}
               </Button>
             ) : null}
             {method === "account-json" ? (
@@ -874,7 +878,7 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
                 onClick={() => setConfirmOpen(true)}
                 disabled={footerDisabled || !pendingAccountJsonImport}
               >
-                查看导入确认
+                {text("查看导入确认")}
               </Button>
             ) : null}
           </DialogFooter>
@@ -884,14 +888,14 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent className="rounded-2xl p-6">
           <DialogHeader className="gap-2">
-            <DialogTitle>确认导入账号 Token</DialogTitle>
+            <DialogTitle>{text("确认导入账号 Token")}</DialogTitle>
             <DialogDescription className="text-sm leading-6">
               {pendingAccountJsonImport
-                ? `确认识别到 ${pendingAccountJsonImport.parsedAccountCount} 个 Token，是否确认导入？`
-                : "尚未读取到可导入的 Token。"}
+                ? <>{text("确认识别到 ")}{pendingAccountJsonImport.parsedAccountCount}{text(" 个 Token，是否确认导入？")}</>
+                : text("尚未读取到可导入的 Token。")}
               {pendingAccountJsonImport?.errorCount
-                ? `，另有 ${pendingAccountJsonImport.errorCount} 个文件未提取成功。`
-                : "。"}
+                ? <>{text("，另有 ")}{pendingAccountJsonImport.errorCount}{text(" 个文件未提取成功")}{text("。")}</>
+                : text("。")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="pt-2">
@@ -901,21 +905,21 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
               onClick={() => setConfirmOpen(false)}
               disabled={isSubmitting}
             >
-              返回
+              {text("返回")}
             </Button>
             <Button
               className="h-10 rounded-xl bg-stone-950 px-5 text-white hover:bg-stone-800"
               onClick={() =>
                 void submitTokens(
                   pendingAccountJsonImport?.tokens ?? [],
-                  "账号 JSON 导入完成",
+                  text("账号 JSON 导入完成"),
                   pendingAccountJsonImport?.accounts ?? [],
                 )
               }
               disabled={isSubmitting || !pendingAccountJsonImport}
             >
               {isSubmitting ? <LoaderCircle className="size-4 animate-spin" /> : null}
-              确认导入
+              {text("确认导入")}
             </Button>
           </DialogFooter>
         </DialogContent>

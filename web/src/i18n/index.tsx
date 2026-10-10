@@ -1,6 +1,18 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  Children,
+  cloneElement,
+  createContext,
+  isValidElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 
 export type Locale = "zh-CN" | "vi-VN";
 
@@ -194,7 +206,7 @@ const vietnameseText: Record<string, string> = {
   "操作步骤": "Các bước thực hiện",
   "（可选）填写你 ChatGPT 账号的邮箱，登录页会预填。": "(Tùy chọn) Nhập email tài khoản ChatGPT; trang đăng nhập sẽ điền sẵn.",
   "点击下方\"打开授权页面\"，在新标签里登录自己的 ChatGPT 账号。": "Nhấn \"Mở trang ủy quyền\" bên dưới và đăng nhập tài khoản ChatGPT của bạn trong tab mới.",
-  "登录完成后浏览器会跳到 ": "Sau khi đăng nhập, trình duyệt sẽ chuyển đến ",
+  "登录完成后浏览器会跳到": "Sau khi đăng nhập, trình duyệt sẽ chuyển đến",
   "。立刻从地址栏复制整段 URL（或开 F12 在 Network 里抓到 callback 那一行，右键 Copy → Copy URL）。": ". Hãy sao chép toàn bộ URL ngay từ thanh địa chỉ (hoặc mở F12, tìm callback trong Network, rồi nhấn Copy → Copy URL).",
   "把 callback URL 粘到下面输入框，点\"完成导入\"。": "Dán callback URL vào ô bên dưới, rồi nhấn \"Hoàn tất nhập\".",
   "邮箱（可选预填）": "Email (điền sẵn, tùy chọn)",
@@ -210,6 +222,10 @@ const vietnameseText: Record<string, string> = {
   "从 TXT 文件导入": "Nhập từ tệp TXT",
   "支持 `.txt`，文件内容也是一行一个 Token。": "Hỗ trợ `.txt`, với một token trên mỗi dòng.",
   "选择 TXT": "Chọn TXT",
+  "打开": "Mở",
+  "，复制页面返回的完整 JSON，系统会自动提取其中的 `accessToken` 导入。": ", sao chép toàn bộ JSON mà trang trả về; hệ thống sẽ tự trích xuất `accessToken` để nhập.",
+  "Session JSON": "JSON phiên",
+  "粘贴完整 JSON，例如包含 \"accessToken\" 的对象...": "Dán toàn bộ JSON, ví dụ đối tượng có chứa \"accessToken\"...",
   "风险提示": "Cảnh báo rủi ro",
   "不要使用自己的大号，尽量使用不常用的小号进行导入，避免出现封号风险。本项目不承担任何封号风险责任。": "Không dùng tài khoản chính của bạn. Hãy ưu tiên tài khoản ít dùng để giảm rủi ro bị khóa; dự án không chịu trách nhiệm cho rủi ro này.",
   "选择本地账号 JSON 文件": "Chọn tệp JSON tài khoản cục bộ",
@@ -218,6 +234,14 @@ const vietnameseText: Record<string, string> = {
   "选择 JSON 文件": "Chọn tệp JSON",
   "最近一次读取到 ": "Lần đọc gần nhất có ",
   " 个文件未提取成功": " tệp không thể trích xuất",
+  "，另有 ": ", và có thêm ",
+  "确认识别到 ": "Đã nhận diện ",
+  " 个 Token，是否确认导入？": " token. Bạn có xác nhận nhập không?",
+  "。": ".",
+  "导入 Token": "Nhập Token",
+  "导入 JSON": "Nhập JSON",
+  "Codex 认证 JSON": "JSON xác thực Codex",
+  "粘贴包含 \"access_token\"、\"refresh_token\"、\"id_token\" 的 Codex 认证 JSON...": "Dán JSON xác thực Codex chứa \"access_token\", \"refresh_token\", \"id_token\"...",
   "查看导入确认": "Xem xác nhận nhập",
   "确认导入账号 Token": "Xác nhận nhập token tài khoản",
   "返回": "Quay lại",
@@ -260,6 +284,16 @@ const vietnameseText: Record<string, string> = {
   "粘贴 Codex 认证 JSON，系统会按 codex 来源导入。": "Dán JSON xác thực Codex; hệ thống sẽ nhập với nguồn codex.",
   "用浏览器跑一遍 OpenAI 标准 OAuth，拿回 refresh_token 后系统会自动续期。": "Thực hiện OAuth chuẩn của OpenAI trong trình duyệt; hệ thống sẽ tự gia hạn sau khi nhận refresh_token.",
   "支持读取本项目导出的单账号对象或全部账号数组，并在提交前做数量确认。": "Hỗ trợ đọc đối tượng một tài khoản hoặc mảng toàn bộ tài khoản do dự án xuất, đồng thời xác nhận số lượng trước khi gửi.",
+  "，新增 ": ", đã thêm ",
+  " 个，已刷新 ": ", đã làm mới ",
+  " 个，失败 ": ", thất bại ",
+  " 个": " mục",
+  "，首个错误：": ", lỗi đầu tiên: ",
+  "，跳过 ": ", đã bỏ qua ",
+  " 个重复项，已自动刷新账号信息": " mục trùng lặp; thông tin tài khoản đã được tự động làm mới",
+  "OAuth 登录完成": "Đăng nhập OAuth hoàn tất",
+  "已从 ": "Đã đọc ",
+  " 读取 ": " từ ",
   "token 已复制": "Đã sao chép token",
   "删除账户失败": "Xóa tài khoản thất bại",
   "刷新完成": "Đã làm mới",
@@ -627,77 +661,45 @@ type I18nContextValue = {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: (key: MessageKey) => string;
+  text: (value: string) => string;
   formatDate: (value: Date | number | string, options?: Intl.DateTimeFormatOptions) => string;
 };
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-const textSources = new WeakMap<Text, string>();
-const attributeSources = new WeakMap<Element, Map<string, string>>();
-const localizedAttributes = ["aria-label", "title", "placeholder", "alt"];
+const localizedPropNames = ["aria-label", "title", "placeholder", "alt"] as const;
+const untranslatedElementTypes = new Set(["code", "pre", "script", "style", "textarea"]);
 
-function shouldSkipText(node: Text): boolean {
-  const parent = node.parentElement;
-  if (!parent) return true;
-  return ["CODE", "PRE", "SCRIPT", "STYLE", "TEXTAREA"].includes(parent.tagName) || parent.isContentEditable;
-}
+type LocalizableProps = {
+  children?: ReactNode;
+  "aria-label"?: string;
+  title?: string;
+  placeholder?: string;
+  alt?: string;
+};
 
-function containsChinese(value: string): boolean {
-  return /[\u3400-\u9fff]/.test(value);
-}
+function localizeReactNode(node: ReactNode, locale: Locale): ReactNode {
+  if (typeof node === "string") return translateVisibleText(node, locale);
+  if (!isValidElement<LocalizableProps>(node)) return node;
+  if (typeof node.type === "string" && untranslatedElementTypes.has(node.type)) return node;
 
-function localizeTextNode(node: Text, locale: Locale) {
-  if (shouldSkipText(node)) return;
-  const current = node.data;
-  const previous = textSources.get(node);
-  const source = previous && (current === translateVisibleText(previous, locale) || !containsChinese(current)) ? previous : current;
-  textSources.set(node, source);
-  const translated = translateVisibleText(source, locale);
-  if (current !== translated) node.data = translated;
-}
+  const props = node.props;
+  const localizedProps: LocalizableProps = {
+    children: Children.map(props.children, (child) => localizeReactNode(child, locale)),
+  };
 
-function localizeElement(element: Element, locale: Locale) {
-  for (const attribute of localizedAttributes) {
-    const current = element.getAttribute(attribute);
-    if (!current) continue;
-    const attributes = attributeSources.get(element) || new Map<string, string>();
-    const previous = attributes.get(attribute);
-    const source = previous && (current === translateVisibleText(previous, locale) || !containsChinese(current)) ? previous : current;
-    attributes.set(attribute, source);
-    attributeSources.set(element, attributes);
-    const translated = translateVisibleText(source, locale);
-    if (current !== translated) element.setAttribute(attribute, translated);
+  for (const propName of localizedPropNames) {
+    const value = props[propName];
+    if (typeof value === "string") localizedProps[propName] = translateVisibleText(value, locale);
   }
+
+  return cloneElement(node as ReactElement<LocalizableProps>, localizedProps);
 }
 
-function localizeSubtree(root: Node, locale: Locale) {
-  if (root.nodeType === Node.TEXT_NODE) localizeTextNode(root as Text, locale);
-  if (root.nodeType === Node.ELEMENT_NODE) localizeElement(root as Element, locale);
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
-  let current = walker.nextNode();
-  while (current) {
-    if (current.nodeType === Node.TEXT_NODE) localizeTextNode(current as Text, locale);
-    else localizeElement(current as Element, locale);
-    current = walker.nextNode();
-  }
-}
-
-function LocalizedDocument({ locale }: { locale: Locale }) {
-  useEffect(() => {
-    const root = document.body;
-    document.documentElement.lang = locale;
-    localizeSubtree(root, locale);
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === "characterData") localizeTextNode(mutation.target as Text, locale);
-        if (mutation.type === "attributes") localizeElement(mutation.target as Element, locale);
-        for (const node of mutation.addedNodes) localizeSubtree(node, locale);
-      }
-    });
-    observer.observe(root, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: localizedAttributes });
-    return () => observer.disconnect();
-  }, [locale]);
-  return null;
+/** Localizes JSX children before React commits them to the DOM. */
+export function LocalizedText({ children }: { children: ReactNode }) {
+  const { locale } = useI18n();
+  return <>{localizeReactNode(children, locale)}</>;
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
@@ -720,14 +722,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     locale,
     setLocale,
     t: (key) => messages[locale][key],
+    text: (value) => translateVisibleText(value, locale),
     formatDate: (date, options) => new Intl.DateTimeFormat(locale, options).format(new Date(date)),
   }), [locale, setLocale]);
 
   useEffect(() => {
+    document.documentElement.lang = value.locale;
     document.title = value.t("meta.title");
   }, [value]);
 
-  return <I18nContext.Provider value={value}><LocalizedDocument locale={locale} />{children}</I18nContext.Provider>;
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
 export function useI18n(): I18nContextValue {
