@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { LoaderCircle, MessageSquarePlus, Pencil, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { getImageConversationStats, type ImageConversation } from "@/store/image-conversations";
 
@@ -32,6 +33,7 @@ export function ImageSidebar({
   formatConversationTime,
   hideActionButtons = false,
 }: ImageSidebarProps) {
+  const { locale, text } = useI18n();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   const editInputRef = useRef<HTMLInputElement>(null);
@@ -69,7 +71,7 @@ export function ImageSidebar({
           <div className="flex items-center gap-2">
             <Button className="h-10 flex-1 rounded-xl bg-stone-950 text-white hover:bg-stone-800" onClick={onCreateDraft}>
               <MessageSquarePlus className="size-4" />
-              新建对话
+              {text("新建对话")}
             </Button>
             <Button
               variant="outline"
@@ -91,10 +93,10 @@ export function ImageSidebar({
           {isLoadingHistory ? (
             <div className="flex items-center gap-2 px-2 py-3 text-sm text-stone-500">
               <LoaderCircle className="size-4 animate-spin" />
-              正在读取会话记录
+              {text("正在读取会话记录")}
             </div>
           ) : conversations.length === 0 ? (
-            <div className="px-2 py-3 text-sm leading-6 text-stone-500">还没有图片记录，输入提示词后会在这里显示。</div>
+            <div className="px-2 py-3 text-sm leading-6 text-stone-500">{text("还没有图片记录，输入提示词后会在这里显示。")}</div>
           ) : (
             conversations.map((conversation) => {
               const active = conversation.id === selectedConversationId;
@@ -134,15 +136,15 @@ export function ImageSidebar({
                       )}
                     </div>
                     <div className={cn("mt-1 text-xs", active ? "text-stone-500" : "text-stone-400")}>
-                      {conversation.turns.length} 轮 · {formatConversationTime(conversation.updatedAt)}
+                      {locale === "vi-VN" ? `${conversation.turns.length} lượt · ${formatConversationTime(conversation.updatedAt)}` : `${conversation.turns.length} 轮 · ${formatConversationTime(conversation.updatedAt)}`}
                     </div>
                     {stats.running > 0 || stats.queued > 0 ? (
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
                         {stats.running > 0 ? (
-                          <span className="rounded-full bg-blue-50 px-2 py-1 text-blue-600">处理中 {stats.running}</span>
+                          <span className="rounded-full bg-blue-50 px-2 py-1 text-blue-600">{text("处理中")} {stats.running}</span>
                         ) : null}
                         {stats.queued > 0 ? (
-                          <span className="rounded-full bg-amber-50 px-2 py-1 text-amber-700">排队 {stats.queued}</span>
+                          <span className="rounded-full bg-amber-50 px-2 py-1 text-amber-700">{text("排队")} {stats.queued}</span>
                         ) : null}
                       </div>
                     ) : null}
@@ -152,7 +154,7 @@ export function ImageSidebar({
                       type="button"
                       onClick={(e) => startRename(conversation, e)}
                       className="inline-flex size-7 items-center justify-center rounded-md text-stone-400 hover:bg-stone-100 hover:text-stone-600"
-                      aria-label="重命名会话"
+                      aria-label={text("重命名会话")}
                     >
                       <Pencil className="size-3.5" />
                     </button>
@@ -160,7 +162,7 @@ export function ImageSidebar({
                       type="button"
                       onClick={() => void onDeleteConversation(conversation.id)}
                       className="inline-flex size-7 items-center justify-center rounded-md text-stone-400 hover:bg-stone-100 hover:text-rose-500"
-                      aria-label="删除会话"
+                      aria-label={text("删除会话")}
                     >
                       <Trash2 className="size-4" />
                     </button>

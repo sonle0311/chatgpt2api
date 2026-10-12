@@ -1,4 +1,6 @@
 "use client";
+import { translateUi } from "@/i18n";
+
 
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -55,11 +57,11 @@ export function useVersionCheck() {
         ]);
         setLatestVersion(version.trim() || currentVersion);
         if (changelog.trim()) setReleases(parseChangelog(changelog));
-        if (showMessage) toast.success("已获取最新版本信息");
+        if (showMessage) toast.success(translateUi("已获取最新版本信息"));
       } catch {
         setLatestVersion(currentVersion);
         setReleases(localReleases);
-        if (showMessage) toast.error("获取最新版本信息失败");
+        if (showMessage) toast.error(translateUi("获取最新版本信息失败"));
       } finally {
         setChecking(false);
       }

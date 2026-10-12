@@ -1,10 +1,15 @@
 "use client";
+import { useI18n } from "@/i18n";
 
 import { useEffect, useState } from "react";
-import { ChevronDown, FileArchive, FileText, KeyRound, ListChecks, type LucideIcon } from "lucide-react";
+import { ChevronDown, Copy, ExternalLink, Eye, EyeOff, FileArchive, FileText, KeyRound, ListChecks, type LucideIcon } from "lucide-react";
+import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
+import { AgentIntegrationGuide } from "@/components/agent-integration-guide";
 import { Card, CardContent } from "@/components/ui/card";
 import webConfig from "@/constants/common-env";
+import { getApiUrls } from "@/lib/api-urls";
 import { getStoredAuthSession } from "@/store/auth";
 
 type ParamRow = [string, string, string];
@@ -16,7 +21,7 @@ type ApiDoc = {
   icon: LucideIcon;
   input: ParamRow[];
   output: ParamRow[];
-  example: (baseUrl: string, key: string) => string;
+  example: (baseUrl: string, key: string, translate: ReturnType<typeof useI18n>["text"]) => string;
 };
 
 const docs: ApiDoc[] = [
@@ -50,10 +55,7 @@ const docs: ApiDoc[] = [
       ["choices", "array", "OpenAI 兼容 choices。"],
       ["usage", "object", "可选，token 使用信息。"],
     ],
-    example: (baseUrl: string, key: string) => `curl ${baseUrl}/chat/completions \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer ${key}" \\
-  -d '{"model":"gpt-5-mini","messages":[{"role":"user","content":"你好"}]}'`,
+    example: (baseUrl: string, key: string, translate) => translate("curl {0}/chat/completions \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer {1}\" \\\n  -d '{\"model\":\"gpt-5-mini\",\"messages\":[{\"role\":\"user\",\"content\":\"你好\"}]}'", [baseUrl, key]),
   },
   {
     title: "Responses",
@@ -71,10 +73,7 @@ const docs: ApiDoc[] = [
       ["output", "array", "Responses 兼容输出。"],
       ["status", "string", "响应状态。"],
     ],
-    example: (baseUrl: string, key: string) => `curl ${baseUrl}/responses \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer ${key}" \\
-  -d '{"model":"gpt-5-mini","input":"生成一张未来城市图片"}'`,
+    example: (baseUrl: string, key: string, translate) => translate("curl {0}/responses \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer {1}\" \\\n  -d '{\"model\":\"gpt-5-mini\",\"input\":\"生成一张未来城市图片\"}'", [baseUrl, key]),
   },
   {
     title: "搜索",
@@ -89,10 +88,7 @@ const docs: ApiDoc[] = [
       ["sources", "array", "可选，搜索引用来源。"],
       ["_account_email", "string", "本次使用的账号邮箱。"],
     ],
-    example: (baseUrl: string, key: string) => `curl ${baseUrl}/search \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer ${key}" \\
-  -d '{"prompt":"搜索 chatgpt2api 最新使用方式"}'`,
+    example: (baseUrl: string, key: string, translate) => translate("curl {0}/search \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer {1}\" \\\n  -d '{\"prompt\":\"搜索 chatgpt2api 最新使用方式\"}'", [baseUrl, key]),
   },
   {
     title: "图片生成",
@@ -112,10 +108,7 @@ const docs: ApiDoc[] = [
       ["data[].b64_json", "string", "base64 图片内容。"],
       ["data[].url", "string", "部分配置下返回图片 URL。"],
     ],
-    example: (baseUrl: string, key: string) => `curl ${baseUrl}/images/generations \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer ${key}" \\
-  -d '{"model":"gpt-image-2","prompt":"一张极简产品海报","n":1}'`,
+    example: (baseUrl: string, key: string, translate) => translate("curl {0}/images/generations \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer {1}\" \\\n  -d '{\"model\":\"gpt-image-2\",\"prompt\":\"一张极简产品海报\",\"n\":1}'", [baseUrl, key]),
   },
   {
     title: "图片编辑",
@@ -135,11 +128,7 @@ const docs: ApiDoc[] = [
       ["data[].b64_json", "string", "base64 图片内容。"],
       ["data[].url", "string", "部分配置下返回图片 URL。"],
     ],
-    example: (baseUrl: string, key: string) => `curl ${baseUrl}/images/edits \\
-  -H "Authorization: Bearer ${key}" \\
-  -F "model=gpt-image-2" \\
-  -F "prompt=改成赛博朋克夜景" \\
-  -F "image=@./input.png"`,
+    example: (baseUrl: string, key: string, translate) => translate("curl {0}/images/edits \\\n  -H \"Authorization: Bearer {1}\" \\\n  -F \"model=gpt-image-2\" \\\n  -F \"prompt=改成赛博朋克夜景\" \\\n  -F \"image=@./input.png\"", [baseUrl, key]),
   },
   {
     title: "创建 PPT 任务",
@@ -157,10 +146,7 @@ const docs: ApiDoc[] = [
       ["kind", "ppt", "任务类型。"],
       ["created_at / updated_at", "string", "任务创建和更新时间。"],
     ],
-    example: (baseUrl: string, key: string) => `curl ${baseUrl}/ppt/generations \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer ${key}" \\
-  -d '{"prompt":"制作一份 8 页以内的季度业务汇报 PPT","base64_images":[]}'`,
+    example: (baseUrl: string, key: string, translate) => translate("curl {0}/ppt/generations \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer {1}\" \\\n  -d '{\"prompt\":\"制作一份 8 页以内的季度业务汇报 PPT\",\"base64_images\":[]}'", [baseUrl, key]),
   },
   {
     title: "创建 PSD 任务",
@@ -178,10 +164,7 @@ const docs: ApiDoc[] = [
       ["kind", "psd", "任务类型。"],
       ["error", "string", "失败时返回错误信息。"],
     ],
-    example: (baseUrl: string, key: string) => `curl ${baseUrl}/psd/generations \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer ${key}" \\
-  -d '{"prompt":"按原图位置拆分海报元素并合成可编辑 PSD","base64_images":["data:image/png;base64,..."]}'`,
+    example: (baseUrl: string, key: string, translate) => translate("curl {0}/psd/generations \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer {1}\" \\\n  -d '{\"prompt\":\"按原图位置拆分海报元素并合成可编辑 PSD\",\"base64_images\":[\"data:image/png;base64,...\"]}'", [baseUrl, key]),
   },
   {
     title: "任务状态查询",
@@ -218,14 +201,15 @@ const docs: ApiDoc[] = [
 const usableModels = ["gpt-image-2", "codex-gpt-image-2", "auto", "gpt-5", "gpt-5-1", "gpt-5-2", "gpt-5-3", "gpt-5-3-mini", "gpt-5-mini"];
 
 function ParamTable({ rows }: { rows: ParamRow[] }) {
+  const { text: translate } = useI18n();
   return (
     <div className="overflow-hidden rounded-lg border border-stone-200">
       <table className="w-full text-left text-xs">
         <thead className="bg-stone-50 text-stone-500">
           <tr>
-            <th className="px-3 py-2 font-medium">参数</th>
-            <th className="px-3 py-2 font-medium">类型</th>
-            <th className="px-3 py-2 font-medium">说明</th>
+            <th className="px-3 py-2 font-medium">{translate("参数")}</th>
+            <th className="px-3 py-2 font-medium">{translate("类型")}</th>
+            <th className="px-3 py-2 font-medium">{translate("说明")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-stone-100 bg-white">
@@ -233,7 +217,7 @@ function ParamTable({ rows }: { rows: ParamRow[] }) {
             <tr key={name}>
               <td className="px-3 py-2 font-mono text-stone-800">{name}</td>
               <td className="px-3 py-2 font-mono text-stone-500">{type}</td>
-              <td className="px-3 py-2 text-stone-600">{desc}</td>
+              <td className="px-3 py-2 text-stone-600">{translate(desc)}</td>
             </tr>
           ))}
         </tbody>
@@ -243,16 +227,30 @@ function ParamTable({ rows }: { rows: ParamRow[] }) {
 }
 
 export function ApiDocsCard() {
+  const { text: translate } = useI18n();
   const [authKey, setAuthKey] = useState("");
-  const serviceBaseUrl = webConfig.apiUrl.replace(/\/$/, "") || (typeof window !== "undefined" ? window.location.origin : "");
-  const openAIBaseUrl = `${serviceBaseUrl}/v1`;
-  const displayKey = authKey || "<当前密钥>";
+  const [showKey, setShowKey] = useState(false);
+  const [browserOrigin, setBrowserOrigin] = useState("");
+  const urls = getApiUrls(webConfig.apiUrl, browserOrigin);
+  const serviceBaseUrl = urls.service;
+  const openAIBaseUrl = urls.openAI;
+  const displayKey = showKey && authKey ? authKey : "YOUR_API_KEY";
+
+  const copy = async (value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success(translate("已复制"));
+    } catch {
+      toast.error(translate("复制失败"));
+    }
+  };
 
   useEffect(() => {
     let active = true;
+    setBrowserOrigin(window.location.origin);
     void getStoredAuthSession().then((session) => {
       if (active) setAuthKey(session?.key || "");
-    });
+    }).catch(() => { if (active) setAuthKey(""); });
     return () => {
       active = false;
     };
@@ -264,34 +262,61 @@ export function ApiDocsCard() {
         <div>
           <div className="flex items-center gap-2 text-base font-semibold text-stone-900">
             <KeyRound className="size-5 text-stone-500" />
-            接口接入说明
-          </div>
+            {translate("接口接入说明")}</div>
           <p className="mt-1 text-xs leading-6 text-stone-500">
-            第三方应用按 OpenAI 兼容接口接入；文件任务接口也使用同一套鉴权方式。
-          </p>
+            {translate("第三方应用按 OpenAI 兼容接口接入；文件任务接口也使用同一套鉴权方式。")}</p>
         </div>
+
+        <div className="rounded-xl border border-teal-200 bg-teal-50/60 p-4 dark:border-teal-900 dark:bg-teal-950/20">
+          <label htmlFor="openai-base-url" className="text-sm font-semibold">Base URL (OpenAI)</label>
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+            <input
+              id="openai-base-url"
+              readOnly
+              value={openAIBaseUrl}
+              placeholder={translate("加载中...")}
+              className="min-w-0 flex-1 rounded-lg border border-stone-200 bg-white px-3 py-2 font-mono text-sm dark:border-white/10 dark:bg-stone-950"
+              onFocus={(event) => event.currentTarget.select()}
+            />
+            <Button type="button" disabled={!openAIBaseUrl} onClick={() => void copy(openAIBaseUrl)}>
+              <Copy className="size-4" />{translate("复制 Base URL")}
+            </Button>
+          </div>
+          <p className="mt-2 text-xs leading-6 text-stone-600 dark:text-stone-400">{translate("在兼容 OpenAI 的应用中填写此地址；已包含 /v1，无需重复添加。")}</p>
+          <p className="text-xs leading-6 text-stone-600 dark:text-stone-400">{translate("其他设备不能使用 localhost 或 127.0.0.1，请改为可访问的服务器 IP 或域名，并确认端口已开放。")}</p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {urls.swagger && <Button variant="outline" asChild><a href={urls.swagger} target="_blank" rel="noreferrer"><ExternalLink className="size-4" />{translate("打开 Swagger 文档")}</a></Button>}
+          {urls.schema && <Button variant="outline" asChild><a href={urls.schema} target="_blank" rel="noreferrer"><FileText className="size-4" />OpenAPI JSON</a></Button>}
+        </div>
+
+        <AgentIntegrationGuide serviceUrl={serviceBaseUrl} />
 
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1 rounded-xl border border-stone-200 bg-white px-3 py-2">
-            <div className="text-xs text-stone-500">服务地址</div>
+            <div className="text-xs text-stone-500">{translate("服务地址")}</div>
             <div className="break-all font-mono text-xs text-stone-800">{serviceBaseUrl}</div>
           </div>
           <div className="space-y-1 rounded-xl border border-stone-200 bg-white px-3 py-2">
-            <div className="text-xs text-stone-500">Base URL（OpenAI）</div>
-            <div className="break-all font-mono text-xs text-stone-800">{openAIBaseUrl}</div>
-          </div>
-          <div className="space-y-1 rounded-xl border border-stone-200 bg-white px-3 py-2">
             <div className="text-xs text-stone-500">API Key</div>
-            <div className="break-all font-mono text-xs text-stone-800">{displayKey}</div>
+            <div className="break-all font-mono text-xs text-stone-800">{showKey ? displayKey : "••••••••••••••••"}</div>
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button type="button" size="sm" variant="outline" disabled={!authKey} onClick={() => setShowKey((value) => !value)} aria-pressed={showKey}>
+                {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}{translate(showKey ? "隐藏 API Key" : "显示 API Key")}
+              </Button>
+              <Button type="button" size="sm" variant="outline" disabled={!authKey} onClick={() => void copy(authKey)}><Copy className="size-4" />{translate("复制 API Key")}</Button>
+            </div>
           </div>
           <div className="space-y-1 rounded-xl border border-stone-200 bg-white px-3 py-2">
-            <div className="text-xs text-stone-500">请求头</div>
+            <div className="text-xs text-stone-500">{translate("请求头")}</div>
             <div className="break-all font-mono text-xs text-stone-800">Authorization: Bearer {displayKey}</div>
           </div>
         </div>
+        <p className="text-xs leading-6 text-stone-500">{translate("请勿分享管理员密钥。需要分发给其他人时，请在设置中创建专用用户密钥。示例默认使用 YOUR_API_KEY 占位符。")}</p>
 
         <div className="space-y-2">
-          <div className="text-xs font-medium text-stone-600">常用模型，也可请求 /v1/models 获取</div>
+          <div className="text-xs font-medium text-stone-600">{translate("常用模型，也可请求 /v1/models 获取")}</div>
           <div className="flex flex-wrap gap-2">
             {usableModels.map((model) => (
               <span key={model} className="rounded-md border border-stone-200 bg-white px-2 py-1 font-mono text-xs text-stone-700">{model}</span>
@@ -310,7 +335,7 @@ export function ApiDocsCard() {
                       <Icon className="size-4" />
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-sm font-semibold text-stone-900">{item.title}</span>
+                      <span className="block text-sm font-semibold text-stone-900">{translate(item.title)}</span>
                       <span className="mt-1 block truncate font-mono text-xs text-stone-500">{item.method} {item.path}</span>
                     </span>
                   </span>
@@ -319,16 +344,19 @@ export function ApiDocsCard() {
 
                 <div className="mt-4 grid gap-4 lg:grid-cols-2">
                   <div className="space-y-2">
-                    <h3 className="text-xs font-semibold text-stone-700">输入参数</h3>
+                    <h3 className="text-xs font-semibold text-stone-700">{translate("输入参数")}</h3>
                     <ParamTable rows={item.input} />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xs font-semibold text-stone-700">输出参数</h3>
+                    <h3 className="text-xs font-semibold text-stone-700">{translate("输出参数")}</h3>
                     <ParamTable rows={item.output} />
                   </div>
                   <div className="space-y-2 lg:col-span-2">
-                    <h3 className="text-xs font-semibold text-stone-700">调用示例</h3>
-                    <pre className="overflow-auto whitespace-pre-wrap break-all rounded-xl bg-stone-950 px-3 py-3 text-xs leading-5 text-stone-100">{item.example(openAIBaseUrl, displayKey)}</pre>
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-xs font-semibold text-stone-700">{translate("调用示例")}</h3>
+                      <Button type="button" size="sm" variant="ghost" disabled={!openAIBaseUrl} onClick={() => void copy(item.example(openAIBaseUrl, displayKey, translate))}><Copy className="size-4" />{translate("复制示例")}</Button>
+                    </div>
+                    <pre className="overflow-auto whitespace-pre-wrap break-all rounded-xl bg-stone-950 px-3 py-3 text-xs leading-5 text-stone-100">{item.example(openAIBaseUrl, displayKey, translate)}</pre>
                   </div>
                 </div>
               </details>

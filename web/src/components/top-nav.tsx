@@ -2,29 +2,60 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Menu } from "lucide-react";
+import {
+  ArrowUpRight,
+  BookOpen,
+  ChevronRight,
+  Code2,
+  ExternalLink,
+  FileClock,
+  ImagePlus,
+  Images,
+  LogOut,
+  Menu,
+  Settings2,
+  UsersRound,
+} from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { HeaderActions } from "@/components/header-actions";
+import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Sheet, SheetClose, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import webConfig from "@/constants/common-env";
 import { fetchThirdPartyApps, type ThirdPartyAppsSettings } from "@/lib/api";
 import { getValidatedAuthSession } from "@/lib/auth-session";
-import { cn } from "@/lib/utils";
 import { clearStoredAuthSession, type StoredAuthSession } from "@/store/auth";
+import { useI18n } from "@/i18n";
 
 const adminNavItems = [
-  { href: "/image", label: "生图" },
-  { href: "/accounts", label: "号池管理" },
-  { href: "/image-manager", label: "图片管理" },
-  { href: "/logs", label: "日志管理" },
-  { href: "/debug", label: "调试" },
-  { href: "/settings", label: "设置" },
+  { href: "/image", label: "生图", icon: ImagePlus },
+  { href: "/accounts", label: "号池管理", icon: UsersRound },
+  { href: "/image-manager", label: "图片管理", icon: Images },
+  { href: "/logs", label: "日志管理", icon: FileClock },
+  { href: "/debug", label: "调试", icon: Code2 },
+  { href: "/api-docs", label: "API 与文档", icon: BookOpen },
+  { href: "/settings", label: "设置", icon: Settings2 },
 ];
 
-const userNavItems = [{ href: "/image", label: "画图" }];
+const userNavItems = [{ href: "/image", label: "画图", icon: ImagePlus }];
 
 function buildThirdPartyHref(appUrl: string, baseUrl: string, apiKey: string) {
   const url = appUrl.trim();
@@ -39,10 +70,14 @@ function buildThirdPartyHref(appUrl: string, baseUrl: string, apiKey: string) {
 }
 
 export function TopNav() {
-  const pathname = usePathname();
+  const { text, locale } = useI18n();
+  const pathname = usePathname().replace(/\/$/, "") || "/";
   const router = useRouter();
-  const [session, setSession] = useState<StoredAuthSession | null | undefined>(undefined);
-  const [thirdPartyApps, setThirdPartyApps] = useState<ThirdPartyAppsSettings | null>(null);
+  const [session, setSession] = useState<StoredAuthSession | null | undefined>(
+    undefined,
+  );
+  const [thirdPartyApps, setThirdPartyApps] =
+    useState<ThirdPartyAppsSettings | null>(null);
   const [isCanvasDialogOpen, setIsCanvasDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -107,12 +142,20 @@ export function TopNav() {
     return null;
   }
 
-  const navItems = session.role === "admin" ? adminNavItems : userNavItems;
-  const roleLabel = session.role === "admin" ? "管理员" : "普通用户";
+  const navItems = (
+    session.role === "admin" ? adminNavItems : userNavItems
+  ).map((item) => ({
+    ...item,
+    label: text(item.label),
+  }));
+  const roleLabel = text(session.role === "admin" ? "管理员" : "普通用户");
   const displayName = session.name.trim() || roleLabel;
   const baseUrl = webConfig.apiUrl.replace(/\/$/, "") || window.location.origin;
   const canvas = thirdPartyApps?.infinite_canvas;
-  const canvasHref = canvas?.enabled && canvas.url.trim() ? buildThirdPartyHref(canvas.url, baseUrl, session.key) : "";
+  const canvasHref =
+    canvas?.enabled && canvas.url.trim()
+      ? buildThirdPartyHref(canvas.url, baseUrl, session.key)
+      : "";
   const canvasDisplayHref = canvasHref ? decodeURIComponent(canvasHref) : "";
 
   const handleCanvasOpen = () => {
@@ -131,129 +174,183 @@ export function TopNav() {
 
   return (
     <>
-      <header className="border-b border-stone-100/50 dark:border-white/10">
-        <div className="flex min-h-12 flex-col gap-1 px-3 py-2 sm:h-12 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-6 sm:py-0">
-          <div className="flex items-center justify-between gap-2 sm:justify-start sm:gap-3">
-            <Sheet>
-              <SheetTrigger className="inline-flex size-8 items-center justify-center text-stone-700 transition hover:text-stone-950 sm:hidden dark:text-stone-200 dark:hover:text-white">
-                <Menu className="size-4" />
-                <span className="sr-only">打开导航</span>
-              </SheetTrigger>
-              <SheetContent side="left">
-                <SheetHeader>
-                  <SheetTitle>chatgpt2api</SheetTitle>
-                  <span className="text-xs text-stone-500 dark:text-stone-400">{roleLabel} · {displayName}</span>
-                </SheetHeader>
-                <nav className="mt-8 flex flex-col gap-1">
-                  {canvasHref ? (
-                    <SheetClose asChild>
-                      <button
-                        type="button"
-                        className="flex items-center rounded-xl px-3 py-2.5 text-left text-sm font-medium text-stone-600 transition hover:bg-stone-100 hover:text-stone-950 dark:text-stone-300 dark:hover:bg-white/10 dark:hover:text-white"
-                        onClick={handleCanvasOpen}
-                      >
-                        无限画布
-                      </button>
-                    </SheetClose>
-                  ) : null}
-                  {navItems.map((item) => {
-                    const active = pathname === item.href;
-                    const className = cn(
-                      "flex items-center rounded-xl px-3 py-2.5 text-sm font-medium transition",
-                      active ? "bg-stone-950 text-white dark:bg-white dark:text-stone-950" : "text-stone-600 hover:bg-stone-100 hover:text-stone-950 dark:text-stone-300 dark:hover:bg-white/10 dark:hover:text-white",
-                    );
-                    return (
-                      <SheetClose asChild key={item.href}>
-                        <Link href={item.href} className={className}>{item.label}</Link>
-                      </SheetClose>
-                    );
-                  })}
-                </nav>
-                <SheetFooter>
-                  <button
-                    type="button"
-                    className="rounded-xl border border-stone-200 px-3 py-2.5 text-left text-sm font-medium text-stone-500 transition hover:text-stone-950 dark:border-white/10 dark:text-stone-300 dark:hover:text-white"
-                    onClick={() => void handleLogout()}
-                  >
-                    退出
-                  </button>
-                </SheetFooter>
-              </SheetContent>
-            </Sheet>
+      <aside className="workspace-sidebar">
+        <Link href="/image" className="sidebar-brand">
+          <Brand />
+        </Link>
+        <nav
+          className="workspace-nav"
+          aria-label={locale === "vi-VN" ? "Điều hướng chính" : "主导航"}
+        >
+          <p className="nav-section-label">
+            {locale === "vi-VN" ? "KHÔNG GIAN LÀM VIỆC" : "工作空间"}
+          </p>
+          {navItems.map(({ href, label, icon: Icon }) => (
             <Link
-              href="/image"
-              className="shrink-0 py-1 text-[15px] font-bold tracking-tight text-stone-950 transition hover:text-stone-700 dark:text-stone-50 dark:hover:text-white"
+              key={href}
+              href={href}
+              className="workspace-nav-link"
+              aria-current={pathname === href ? "page" : undefined}
             >
-              chatgpt2api
+              <Icon size={19} strokeWidth={1.7} />
+              <span>{label}</span>
+              {pathname === href && <span className="nav-active-dot" />}
             </Link>
-            <HeaderActions className="ml-auto sm:hidden" showGithubText={false} />
-          </div>
-          <nav className="hide-scrollbar -mx-1 hidden min-w-0 flex-1 gap-1 overflow-x-auto px-1 sm:mx-0 sm:flex sm:justify-center sm:gap-8 sm:overflow-visible sm:px-0">
-            {canvasHref ? (
-              <button
-                type="button"
-                onClick={handleCanvasOpen}
-                className="relative shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] font-medium text-stone-500 transition hover:text-stone-900 sm:rounded-none sm:px-0 sm:text-[15px] dark:text-stone-400 dark:hover:text-stone-100"
-              >
-                无限画布
-              </button>
-            ) : null}
-            {navItems.map((item) => {
-              const active = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "relative shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] font-medium transition sm:rounded-none sm:px-0 sm:text-[15px]",
-                    active
-                      ? "bg-stone-950 text-white sm:bg-transparent sm:font-semibold sm:text-stone-950 dark:bg-white dark:text-stone-950 dark:sm:bg-transparent dark:sm:text-white"
-                      : "text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100",
-                  )}
-                >
-                  {item.label}
-                  {active ? <span className="absolute inset-x-0 -bottom-[1px] hidden h-0.5 bg-stone-950 dark:bg-white sm:block" /> : null}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="hidden items-center justify-end gap-2 sm:flex sm:gap-3">
-            <HeaderActions />
-            <span className="hidden rounded-md bg-stone-100 px-2 py-1 text-[10px] font-medium text-stone-500 dark:bg-white/8 dark:text-stone-300 sm:inline-block sm:text-[11px]">
-              {roleLabel} · {displayName}
-            </span>
+          ))}
+          {canvasHref && (
             <button
               type="button"
-              className="py-1 text-xs text-stone-400 transition hover:text-stone-700 dark:text-stone-500 dark:hover:text-stone-200 sm:text-sm"
-              onClick={() => void handleLogout()}
+              className="workspace-nav-link"
+              onClick={handleCanvasOpen}
             >
-              退出
+              <ExternalLink size={19} />
+              <span>{text("无限画布")}</span>
+              <ArrowUpRight size={14} />
+            </button>
+          )}
+        </nav>
+        <div className="sidebar-bottom">
+          {session.role === "admin" && (
+            <Link href="/api-docs" className="sidebar-api-card">
+              <Code2 size={20} />
+              <span>
+                {locale === "vi-VN" ? "Kết nối ứng dụng" : "连接应用"}
+                <small>
+                  {locale === "vi-VN"
+                    ? "Base URL & tài liệu API"
+                    : "Base URL 与 API 文档"}
+                </small>
+              </span>
+              <ArrowUpRight size={16} />
+            </Link>
+          )}
+          <div className="sidebar-version">
+            WORKSPACE <span>v{webConfig.appVersion}</span>
+          </div>
+          <div className="workspace-profile">
+            <span className="profile-avatar">
+              {displayName.slice(0, 1).toUpperCase()}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-medium">{displayName}</p>
+              <span>{roleLabel}</span>
+            </div>
+            <button
+              type="button"
+              className="profile-logout"
+              onClick={() => void handleLogout()}
+              title={text("退出")}
+              aria-label={text("退出")}
+            >
+              <LogOut size={17} />
             </button>
           </div>
         </div>
+      </aside>
+      <header className="workspace-topbar">
+        <div className="flex min-w-0 items-center gap-3">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                aria-label={text("打开导航")}
+              >
+                <Menu size={20} />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="workspace-mobile-menu">
+              <SheetHeader>
+                <SheetTitle>
+                  <Brand />
+                </SheetTitle>
+                <p className="text-xs text-muted-foreground">
+                  {roleLabel} · {displayName}
+                </p>
+              </SheetHeader>
+              <nav className="workspace-nav">
+                <p className="nav-section-label">
+                  {locale === "vi-VN" ? "KHÔNG GIAN LÀM VIỆC" : "工作空间"}
+                </p>
+                {navItems.map(({ href, label, icon: Icon }) => (
+                  <SheetClose asChild key={href}>
+                    <Link
+                      href={href}
+                      className="workspace-nav-link"
+                      aria-current={pathname === href ? "page" : undefined}
+                    >
+                      <Icon size={19} />
+                      <span>{label}</span>
+                    </Link>
+                  </SheetClose>
+                ))}
+                {canvasHref && (
+                  <SheetClose asChild>
+                    <button
+                      type="button"
+                      className="workspace-nav-link"
+                      onClick={handleCanvasOpen}
+                    >
+                      <ExternalLink size={19} />
+                      <span>{text("无限画布")}</span>
+                    </button>
+                  </SheetClose>
+                )}
+              </nav>
+              <SheetFooter>
+                <Button variant="outline" onClick={() => void handleLogout()}>
+                  <LogOut size={16} />
+                  {text("退出")}
+                </Button>
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
+          <div className="workspace-breadcrumb">
+            <span className="hidden sm:inline">Workspace</span>
+            <ChevronRight className="hidden sm:block" size={14} />
+            <strong>
+              {navItems.find((item) => item.href === pathname)?.label ||
+                "chatgpt2api"}
+            </strong>
+          </div>
+        </div>
+        <HeaderActions showGithubText={false} />
       </header>
       <Dialog open={isCanvasDialogOpen} onOpenChange={setIsCanvasDialogOpen}>
         <DialogContent showCloseButton={false} className="rounded-2xl p-6">
           <DialogHeader className="gap-2">
-            <DialogTitle>跳转到三方应用</DialogTitle>
+            <DialogTitle>{text("跳转到三方应用")}</DialogTitle>
             <DialogDescription className="text-sm leading-6">
-              该入口仅供个人测试使用，建议自行本机部署后再长期使用。跳转地址会默认带上本项目地址和当前密钥，用于自动填充连接信息；如果不放心，可以取消后手动前往应用并自行输入。
+              {text(
+                "该入口仅供个人测试使用，建议自行本机部署后再长期使用。跳转地址会默认带上本项目地址和当前密钥，用于自动填充连接信息；如果不放心，可以取消后手动前往应用并自行输入。",
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <div className="text-xs font-medium text-stone-500">完整跳转地址</div>
+            <div className="text-xs font-medium text-stone-500">
+              {text("完整跳转地址")}
+            </div>
             <div className="max-h-28 overflow-auto break-all rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 font-mono text-xs leading-5 text-stone-700">
               {canvasDisplayHref}
             </div>
           </div>
           <DialogFooter className="pt-2">
             <DialogClose asChild>
-              <Button type="button" variant="outline" className="rounded-xl border-stone-200 bg-white text-stone-700">
-                取消
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-xl border-stone-200 bg-white text-stone-700"
+              >
+                {text("取消")}
               </Button>
             </DialogClose>
-            <Button type="button" className="rounded-xl bg-stone-950 text-white hover:bg-stone-800" onClick={confirmCanvasOpen}>
-              继续跳转
+            <Button
+              type="button"
+              className="rounded-xl bg-stone-950 text-white hover:bg-stone-800"
+              onClick={confirmCanvasOpen}
+            >
+              {text("继续跳转")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,4 +1,5 @@
 "use client";
+import { useI18n } from "@/i18n";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
@@ -94,6 +95,7 @@ export function ImageLightbox({
   onOpenChange,
   onIndexChange,
 }: ImageLightboxProps) {
+  const { text: translate } = useI18n();
   const gestureRef = useRef<TouchGesture | null>(null);
   const lastTapRef = useRef(0);
   const pendingTransformRef = useRef<ImageTransform | null>(null);
@@ -350,8 +352,7 @@ export function ImageLightbox({
           onPointerDownOutside={(e) => e.preventDefault()}
         >
           <DialogPrimitive.Title className="sr-only">
-            图片预览
-          </DialogPrimitive.Title>
+            {translate("图片预览")}</DialogPrimitive.Title>
 
           <div className="absolute top-[calc(env(safe-area-inset-top)+1rem)] right-4 z-10 flex items-center gap-2">
             {current.sizeLabel || current.dimensions ? (
@@ -368,13 +369,13 @@ export function ImageLightbox({
               type="button"
               onClick={handleDownload}
               className="inline-flex size-9 items-center justify-center rounded-full bg-black/50 text-white/90 transition hover:bg-black/70"
-              aria-label="下载图片"
+              aria-label={translate("下载图片")}
             >
               <Download className="size-4" />
             </button>
             <DialogPrimitive.Close className="inline-flex size-9 items-center justify-center rounded-full bg-black/50 text-white/90 transition hover:bg-black/70">
               <X className="size-4" />
-              <span className="sr-only">关闭</span>
+              <span className="sr-only">{translate("关闭")}</span>
             </DialogPrimitive.Close>
           </div>
 
@@ -383,7 +384,7 @@ export function ImageLightbox({
               type="button"
               onClick={goPrev}
               className="absolute left-4 z-10 inline-flex size-10 items-center justify-center rounded-full bg-black/40 text-white/90 transition hover:bg-black/60"
-              aria-label="上一张"
+              aria-label={translate("上一张")}
             >
               <ChevronLeft className="size-5" />
             </button>
@@ -422,7 +423,7 @@ export function ImageLightbox({
               type="button"
               onClick={goNext}
               className="absolute right-4 z-10 inline-flex size-10 items-center justify-center rounded-full bg-black/40 text-white/90 transition hover:bg-black/60"
-              aria-label="下一张"
+              aria-label={translate("下一张")}
             >
               <ChevronRight className="size-5" />
             </button>

@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:i18n": "node --test test/i18n.test.cjs",
     "dev": "next dev --webpack -H 0.0.0.0",
     "build": "next build",
     "start": "next start"

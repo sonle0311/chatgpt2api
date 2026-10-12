@@ -1,4 +1,5 @@
 "use client";
+import { useI18n } from "@/i18n";
 
 import { format, parse } from "date-fns";
 import { CalendarIcon } from "lucide-react";
@@ -16,6 +17,7 @@ type DateRangeFilterProps = {
 };
 
 export function DateRangeFilter({ startDate, endDate, onChange }: DateRangeFilterProps) {
+  const { text: translate } = useI18n();
   const selected: DateRange | undefined = startDate
     ? {
         from: parse(startDate, "yyyy-MM-dd", new Date()),
@@ -23,7 +25,7 @@ export function DateRangeFilter({ startDate, endDate, onChange }: DateRangeFilte
       }
     : undefined;
 
-  const label = startDate ? `${startDate} 至 ${endDate || startDate}` : "选择日期范围";
+  const label = startDate ? translate("{0} 至 {1}", [startDate, endDate || startDate]) : translate("选择日期范围");
 
   return (
     <Field className="w-[240px]">

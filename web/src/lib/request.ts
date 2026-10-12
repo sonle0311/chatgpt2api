@@ -1,7 +1,7 @@
 import axios, {AxiosError, type AxiosRequestConfig} from "axios";
 
 import webConfig from "@/constants/common-env";
-import { getStoredLocale } from "@/i18n";
+import { getCurrentLocale, translateUi } from "@/i18n";
 import {clearStoredAuthSession, getStoredAuthKey} from "@/store/auth";
 
 type RequestConfig = AxiosRequestConfig & {
@@ -41,7 +41,7 @@ request.interceptors.request.use(async (config) => {
         headers.Authorization = `Bearer ${authKey}`;
     }
     if (!headers["Accept-Language"]) {
-        headers["Accept-Language"] = getStoredLocale() || (typeof navigator !== "undefined" && navigator.language.toLowerCase().startsWith("vi") ? "vi-VN" : "zh-CN");
+        headers["Accept-Language"] = getCurrentLocale();
     }
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
@@ -71,7 +71,7 @@ request.interceptors.response.use(
             errorMessageFromValue(payload?.error) ||
             payload?.message ||
             error.message ||
-            `请求失败 (${status || 500})`;
+            translateUi("请求失败 ({0})", [status || 500]);
         return Promise.reject(new Error(message));
     },
 );

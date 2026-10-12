@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import webConfig from "@/constants/common-env";
 import { fetchSettingsConfig } from "@/lib/api";
 import { getStoredAuthSession } from "@/store/auth";
+import { useI18n } from "@/i18n";
 
 export function SkillPanel() {
+  const { locale, text } = useI18n();
   const [browserBaseUrl, setBrowserBaseUrl] = useState("");
   const [configuredBaseUrl, setConfiguredBaseUrl] = useState("");
   const [authKey, setAuthKey] = useState("");
@@ -120,9 +122,59 @@ SKILL.md content:
 ${skillEn}
 \`\`\``, [skillEn]);
 
-  const copyText = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    toast.success("已复制");
+  const skillVi = `---
+name: chatgpt2api-search
+description: Dùng khi cần tìm kiếm web, tra cứu thông tin mới, xác minh sự kiện hoặc cung cấp nguồn. Gọi API tìm kiếm chatgpt2api và trả lời kèm liên kết nguồn.
+---
+
+# Tìm kiếm ChatGPT2API
+
+Dùng skill này khi người dùng yêu cầu tìm kiếm trên web, tra cứu thông tin mới, xác minh tài liệu, tin tức, giá cả hoặc cập nhật tài liệu và cần nguồn dẫn.
+
+## Yêu cầu
+
+POST ${apiBaseUrl}/v1/search
+
+Headers:
+
+Authorization: Bearer ${authKey}
+Content-Type: application/json
+
+JSON body:
+
+{
+  "prompt": "<câu hỏi cần tìm kiếm>"
+}
+
+## Xử lý kết quả
+
+- Dùng trường \`answer\` làm nội dung trả lời chính.
+- Đính kèm liên kết từ \`sources\` nếu có.
+- Nếu API báo lỗi, giải thích ngắn gọn và hỏi người dùng có muốn thử lại không.`;
+
+  const viPrompt = `Hãy cài đặt một skill tìm kiếm web trên máy này.
+
+Yêu cầu:
+1. Cài đặt skill cục bộ theo quy tắc của môi trường hiện tại.
+2. Tên skill: chatgpt2api-search
+3. Tên tệp: SKILL.md
+4. Nếu chưa xác định được thư mục skills, hãy hỏi trước, không đoán đường dẫn.
+5. Chỉ tạo hoặc cập nhật tệp skill này, không sửa tệp không liên quan.
+6. Ghi toàn bộ nội dung dưới đây vào SKILL.md.
+
+Nội dung SKILL.md:
+
+\`\`\`markdown
+${skillVi}
+\`\`\``;
+
+  const copyText = async (value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success(text("已复制"));
+    } catch {
+      toast.error(text("复制失败"));
+    }
   };
 
   const downloadSkill = (text: string) => {
@@ -135,8 +187,10 @@ ${skillEn}
   };
 
   const versions = [
-    { title: "中文安装指令", desc: "复制后直接发给 Codex 或 Claude，让它安装到本地。", prompt: zhPrompt, skill: skillZh },
-    { title: "English install prompt", desc: "Copy and send this to Codex or Claude to install locally.", prompt: enPrompt, skill: skillEn },
+    locale === "vi-VN"
+      ? { title: "Hướng dẫn cài đặt tiếng Việt", desc: "Sao chép và gửi cho Codex hoặc Claude để cài đặt trên máy.", prompt: viPrompt, skill: skillVi }
+      : { title: "中文安装指令", desc: "复制后直接发给 Codex 或 Claude，让它安装到本地。", prompt: zhPrompt, skill: skillZh },
+    { title: text("英文安装指令"), desc: text("复制后直接发给 Codex 或 Claude，让它安装到本地。"), prompt: enPrompt, skill: skillEn },
   ];
 
   return (
@@ -151,11 +205,11 @@ ${skillEn}
             <div className="flex gap-2">
               <Button size="sm" variant="outline" className="cursor-pointer" onClick={() => downloadSkill(item.skill)}>
                 <Download />
-                下载
+                {text("下载")}
               </Button>
               <Button size="sm" className="cursor-pointer" onClick={() => void copyText(item.prompt)}>
                 <Copy />
-                复制
+                {text("复制")}
               </Button>
             </div>
           </div>

@@ -13,6 +13,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react";
+import { vietnameseExtra } from "./vi-extra";
 
 export type Locale = "zh-CN" | "vi-VN";
 
@@ -73,6 +74,7 @@ const vietnameseText: Record<string, string> = {
   "取消": "Hủy",
   "继续跳转": "Tiếp tục mở",
   "完整跳转地址": "Địa chỉ chuyển đến đầy đủ",
+  "该入口仅供个人测试使用，建议自行本机部署后再长期使用。跳转地址会默认带上本项目地址和当前密钥，用于自动填充连接信息；如果不放心，可以取消后手动前往应用并自行输入。": "Lối vào này chỉ dành cho thử nghiệm cá nhân. Hãy tự triển khai tại máy trước khi dùng lâu dài. Địa chỉ mở ứng dụng sẽ kèm địa chỉ dự án và khóa hiện tại để điền sẵn thông tin kết nối; nếu không yên tâm, hãy hủy và tự mở ứng dụng để nhập thủ công.",
   "加载中...": "Đang tải...",
   "刷新": "Làm mới",
   "搜索": "Tìm kiếm",
@@ -96,6 +98,32 @@ const vietnameseText: Record<string, string> = {
   "限流账户": "Tài khoản bị giới hạn",
   "异常账户": "Tài khoản bất thường",
   "禁用账户": "Tài khoản đã vô hiệu hóa",
+  "一键刷新所有账号信息和额度": "Làm mới thông tin và hạn mức của tất cả tài khoản",
+  "导出全部 Token": "Xuất toàn bộ token",
+  "编辑账户": "Chỉnh sửa tài khoản",
+  "手动修改账号状态和专属代理。": "Thay đổi thủ công trạng thái tài khoản và proxy riêng.",
+  "状态": "Trạng thái",
+  "账号代理": "Proxy tài khoản",
+  "测试": "Kiểm tra",
+  "系统可用模型": "Model hệ thống khả dụng",
+  "正在加载模型列表...": "Đang tải danh sách model...",
+  "当前暂无可用模型": "Hiện chưa có model khả dụng",
+  "账户列表": "Danh sách tài khoản",
+  "正在加载账户": "Đang tải tài khoản",
+  "从后端同步账号列表和状态。": "Đang đồng bộ danh sách và trạng thái tài khoản từ máy chủ.",
+  "刷新选中账号信息和额度": "Làm mới thông tin và hạn mức tài khoản đã chọn",
+  "尝试恢复异常账号": "Thử khôi phục tài khoản bất thường",
+  "移除异常账号": "Xóa tài khoản bất thường",
+  "类型": "Loại",
+  "账号信息": "Thông tin tài khoản",
+  "创建时间": "Thời gian tạo",
+  "额度": "Hạn mức",
+  "恢复时间": "Thời điểm khôi phục",
+  "在途": "Đang chạy",
+  "操作": "Thao tác",
+  "没有匹配的账户": "Không có tài khoản phù hợp",
+  "调整筛选条件或搜索关键字后重试。": "Hãy điều chỉnh bộ lọc hoặc từ khóa tìm kiếm rồi thử lại.",
+  "页": "trang",
   "导入账户": "Nhập tài khoản",
   "导入账号 JSON": "Nhập JSON tài khoản",
   "导入完成": "Nhập thành công",
@@ -131,6 +159,52 @@ const vietnameseText: Record<string, string> = {
   "删除标签失败": "Xóa nhãn thất bại",
   "存储信息加载失败": "Tải thông tin lưu trữ thất bại",
   "加载存储信息...": "Đang tải thông tin lưu trữ...",
+  "删除匹配日期": "Xóa ảnh khớp ngày",
+  "标签筛选：": "Lọc theo nhãn:",
+  "清除": "Xóa",
+  "磁盘总量": "Tổng dung lượng đĩa",
+  "剩余空间": "Dung lượng trống",
+  "图片数量": "Số lượng ảnh",
+  "图片占用": "Dung lượng ảnh",
+  "快捷操作": "Thao tác nhanh",
+  "压缩优化": "Nén tối ưu",
+  "按日期删除": "Xóa theo ngày",
+  "清理至": "Dọn dẹp tới",
+  "剩余": "còn trống",
+  "按日期删除图片": "Xóa ảnh theo ngày",
+  "之前的图片": "ảnh trước đó",
+  "此操作不可撤销，将永久删除所有匹配日期的图片及其缩略图。": "Không thể hoàn tác. Mọi ảnh và ảnh thu nhỏ khớp ngày sẽ bị xóa vĩnh viễn.",
+  "确认删除": "Xác nhận xóa",
+  "下载所选": "Tải mục đã chọn",
+  "没有找到图片": "Không tìm thấy ảnh",
+  "确定要删除这张图片吗？此操作不可恢复。": "Bạn có chắc muốn xóa ảnh này? Không thể khôi phục sau khi xóa.",
+  "删除标签": "Xóa nhãn",
+  "张": "ảnh",
+  "松开以上传参考图": "Thả để tải ảnh tham chiếu lên",
+  "个任务处理中": "tác vụ đang xử lý",
+  "图像设置": "Cài đặt ảnh",
+  "模型": "Model",
+  "质量": "Chất lượng",
+  "尺寸": "Kích thước",
+  "宽高比": "Tỉ lệ khung hình",
+  "生成数量": "Số lượng ảnh tạo",
+  "新建对话": "Cuộc trò chuyện mới",
+  "新建": "Tạo mới",
+  "正在读取会话记录": "Đang đọc lịch sử trò chuyện",
+  "还没有图片记录，输入提示词后会在这里显示。": "Chưa có lịch sử ảnh. Hãy nhập lời nhắc để bắt đầu.",
+  "排队": "Đang chờ",
+  "重命名会话": "Đổi tên cuộc trò chuyện",
+  "删除会话": "Xóa cuộc trò chuyện",
+  "无限画布入口": "Lối vào canvas vô hạn",
+  "开启后会在顶部导航显示入口，跳转时自动附带本项目地址和当前密钥。": "Khi bật, lối vào sẽ hiện trên thanh điều hướng và tự kèm địa chỉ dự án cùng khóa hiện tại.",
+  "启用无限画布": "Bật canvas vô hạn",
+  "无限画布地址": "Địa chỉ canvas vô hạn",
+  "顶部入口跳转时会追加 apiKey 和 baseUrl 参数；关闭后顶部导航不显示无限画布。": "Lối vào trên cùng sẽ thêm tham số apiKey và baseUrl; khi tắt, canvas vô hạn không hiện trên thanh điều hướng.",
+  "该入口仅供个人测试使用；长期使用建议自行本机部署无限画布。": "Lối vào này chỉ dành cho thử nghiệm cá nhân; để dùng lâu dài, nên tự triển khai canvas vô hạn tại máy.",
+  "基础地址": "Địa chỉ cơ sở",
+  "设置 `CHATGPT2API_BASE_URL` 的本地配置值，保存后立即生效。": "Thiết lập cấu hình cục bộ `CHATGPT2API_BASE_URL`; có hiệu lực ngay sau khi lưu.",
+  "留空则使用环境变量或默认值，保存时会自动去掉首尾空格。": "Để trống sẽ dùng biến môi trường hoặc giá trị mặc định; khoảng trắng đầu cuối sẽ tự được xóa khi lưu.",
+  "保存配置": "Lưu cấu hình",
   "输入你想要生成的画面，也可直接粘贴图片": "Mô tả ảnh bạn muốn tạo, hoặc dán ảnh trực tiếp",
   "描述你希望如何修改参考图": "Mô tả cách bạn muốn chỉnh sửa ảnh tham chiếu",
   "自动": "Tự động",
@@ -148,8 +222,6 @@ const vietnameseText: Record<string, string> = {
   "预热首页": "Đang khởi động trang chủ",
   "启动生成": "Bắt đầu tạo",
   "准备会话": "Đang chuẩn bị phiên",
-  "删除会话": "Xóa phiên",
-  "重命名会话": "Đổi tên phiên",
   "删除提示词记录": "Xóa lịch sử lời nhắc",
   "删除生成结果": "Xóa kết quả tạo",
   "清空历史记录": "Xóa toàn bộ lịch sử",
@@ -571,55 +643,6 @@ const vietnamesePatterns: Array<[RegExp, string]> = [
   [/^移除 (.+)$/, "Xóa $1"],
 ];
 
-// Fragments cover dynamic strings that include counts, dates, filenames or
-// server-provided values and therefore cannot be represented as exact keys.
-const vietnameseFragments: Record<string, string> = {
-  "账号管理": "quản lý tài khoản",
-  "历史记录": "lịch sử",
-  "图片": "ảnh",
-  "账号": "tài khoản",
-  "账户": "tài khoản",
-  "生成": "tạo",
-  "成功": "thành công",
-  "失败": "thất bại",
-  "删除": "xóa",
-  "保存": "lưu",
-  "加载": "tải",
-  "刷新": "làm mới",
-  "设置": "cài đặt",
-  "日志": "nhật ký",
-  "备份": "sao lưu",
-  "连接": "kết nối",
-  "代理": "proxy",
-  "导入": "nhập",
-  "导出": "xuất",
-  "恢复": "khôi phục",
-  "配置": "cấu hình",
-  "任务": "tác vụ",
-  "文件": "tệp",
-  "地址": "địa chỉ",
-  "名称": "tên",
-  "密码": "mật khẩu",
-  "用户": "người dùng",
-  "管理员": "quản trị viên",
-  "分组": "nhóm",
-  "查询": "tra cứu",
-  "详情": "chi tiết",
-  "错误": "lỗi",
-  "数据": "dữ liệu",
-  "时间": "thời gian",
-  "当前": "hiện tại",
-  "全部": "tất cả",
-  "选择": "chọn",
-  "可用": "khả dụng",
-  "不可用": "không khả dụng",
-  "完成": "hoàn tất",
-  "正在": "đang",
-  "已": "đã",
-  "未": "chưa",
-};
-
-const orderedVietnameseFragments = Object.entries(vietnameseFragments).sort(([left], [right]) => right.length - left.length);
 
 function normalizeLocale(value: string | null | undefined): Locale | null {
   const language = String(value || "").trim().toLowerCase();
@@ -630,12 +653,9 @@ function normalizeLocale(value: string | null | undefined): Locale | null {
 }
 
 export function detectBrowserLocale(): Locale {
-  if (typeof window === "undefined") return "zh-CN";
-  for (const language of navigator.languages || [navigator.language]) {
-    const locale = normalizeLocale(language);
-    if (locale) return locale;
-  }
-  return "zh-CN";
+  // Vietnamese is the product default. The browser locale must never override
+  // a user's explicit choice in the language menu.
+  return "vi-VN";
 }
 
 export function getStoredLocale(): Locale | null {
@@ -649,19 +669,39 @@ export function getStoredLocale(): Locale | null {
 
 export function translateVisibleText(value: string, locale: Locale): string {
   if (locale !== "vi-VN" || !value) return value;
-  const exact = vietnameseText[value.trim()];
-  if (exact) return value.replace(value.trim(), exact);
+  const full = vietnameseExtra[value] ?? vietnameseText[value];
+  if (full !== undefined) return full;
+  const exact = vietnameseExtra[value.trim()] ?? vietnameseText[value.trim()];
+  if (exact !== undefined) return value.replace(value.trim(), () => exact);
   for (const [pattern, translated] of vietnamesePatterns) {
     if (pattern.test(value.trim())) return value.replace(value.trim(), value.trim().replace(pattern, translated));
   }
-  return orderedVietnameseFragments.reduce((translated, [source, target]) => translated.split(source).join(target), value);
+  return value;
+}
+
+export type MessageValues = readonly (string | number | null | undefined)[];
+
+/** Interpolate after translation; never rewrite filenames, prompts or API values. */
+export function formatMessage(value: string, locale: Locale, values: MessageValues = []): string {
+  return translateVisibleText(value, locale).replace(/\{(\d+)\}/g, (token, index) =>
+    Number(index) < values.length ? String(values[Number(index)] ?? "") : token);
+}
+
+let activeLocale: Locale | null = null;
+export function getCurrentLocale(): Locale {
+  return activeLocale ?? getStoredLocale() ?? "vi-VN";
+}
+
+/** For notifications and stores. React rendering uses useI18n().text. */
+export function translateUi(value: string, values?: MessageValues): string {
+  return formatMessage(value, getCurrentLocale(), values);
 }
 
 type I18nContextValue = {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: (key: MessageKey) => string;
-  text: (value: string) => string;
+  text: (value: string, values?: MessageValues) => string;
   formatDate: (value: Date | number | string, options?: Intl.DateTimeFormatOptions) => string;
 };
 
@@ -702,14 +742,16 @@ export function LocalizedText({ children }: { children: ReactNode }) {
   return <>{localizeReactNode(children, locale)}</>;
 }
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, updateLocale] = useState<Locale>("zh-CN");
+export function I18nProvider({ children, initialLocale = "vi-VN" }: { children: ReactNode; initialLocale?: Locale }) {
+  const [locale, updateLocale] = useState<Locale>(initialLocale);
 
   useEffect(() => {
-    updateLocale(getStoredLocale() || detectBrowserLocale());
-  }, []);
+    activeLocale = getStoredLocale() || initialLocale;
+    updateLocale(activeLocale);
+  }, [initialLocale]);
 
   const setLocale = useCallback((nextLocale: Locale) => {
+    activeLocale = nextLocale;
     updateLocale(nextLocale);
     try {
       window.localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale);
@@ -722,7 +764,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     locale,
     setLocale,
     t: (key) => messages[locale][key],
-    text: (value) => translateVisibleText(value, locale),
+    text: (value, values) => formatMessage(value, locale, values),
     formatDate: (date, options) => new Intl.DateTimeFormat(locale, options).format(new Date(date)),
   }), [locale, setLocale]);
 

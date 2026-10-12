@@ -717,38 +717,38 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
     return (
       <div className="space-y-3">
         <MethodCard
-          title="OAuth 登录已有账号（带自动刷新）"
-          description="用浏览器登录自己的 ChatGPT 账号，回填 callback URL 即可拿到 refresh_token，后台会自动续期。"
+          title={text("OAuth 登录已有账号（带自动刷新）")}
+          description={text("用浏览器登录自己的 ChatGPT 账号，回填 callback URL 即可拿到 refresh_token，后台会自动续期。")}
           icon={LogIn}
           onClick={() => setMethod("oauth")}
         />
         <MethodCard
-          title="导入 Access Token"
-          description="支持直接粘贴，一行一个；也支持从 TXT 文件读取，一行一个。"
+          title={text("导入 Access Token")}
+          description={text("支持直接粘贴，一行一个；也支持从 TXT 文件读取，一行一个。")}
           icon={KeyRound}
           onClick={() => setMethod("token")}
         />
         <MethodCard
-          title="导入 Session JSON"
-          description="从 chatgpt.com 的 session 接口复制完整 JSON，自动提取 accessToken。"
+          title={text("导入 Session JSON")}
+          description={text("从 chatgpt.com 的 session 接口复制完整 JSON，自动提取 accessToken。")}
           icon={FileJson}
           onClick={() => setMethod("session")}
         />
         <MethodCard
-          title="导入 Codex 认证 JSON"
-          description="粘贴 Codex 认证 JSON，导入后账号来源标记为 codex。"
+          title={text("导入 Codex 认证 JSON")}
+          description={text("粘贴 Codex 认证 JSON，导入后账号来源标记为 codex。")}
           icon={FileJson}
           onClick={() => setMethod("codex-auth")}
         />
         <MethodCard
-          title="导入账号 JSON 文件"
-          description="支持本项目导出的单账号 JSON 或全部账号数组，也兼容 CPA JSON 文件。"
+          title={text("导入账号 JSON 文件")}
+          description={text("支持本项目导出的单账号 JSON 或全部账号数组，也兼容 CPA JSON 文件。")}
           icon={Files}
           onClick={() => setMethod("account-json")}
         />
         <MethodCard
-          title="从远程 CPA 服务器导入"
-          description="前往设置页面配置远程 CPA 服务器后再执行导入。"
+          title={text("从远程 CPA 服务器导入")}
+          description={text("前往设置页面配置远程 CPA 服务器后再执行导入。")}
           icon={Files}
           onClick={() => {
             setOpen(false);
@@ -757,8 +757,8 @@ export function AccountImportDialog({ disabled, onImported }: AccountImportDialo
           }}
         />
         <MethodCard
-          title="从 Sub2API 服务器导入"
-          description="前往设置页面配置 Sub2API 服务器，再选择其中的 OpenAI 账号导入。"
+          title={text("从 Sub2API 服务器导入")}
+          description={text("前往设置页面配置 Sub2API 服务器，再选择其中的 OpenAI 账号导入。")}
           icon={ServerCog}
           onClick={() => {
             setOpen(false);

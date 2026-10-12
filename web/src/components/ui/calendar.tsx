@@ -3,6 +3,8 @@
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
+import { vi, zhCN } from "react-day-picker/locale";
+import { useI18n } from "@/i18n";
 
 import { cn } from "@/lib/utils";
 
@@ -12,8 +14,10 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: React.ComponentProps<typeof DayPicker>) {
+  const { locale } = useI18n();
   return (
     <DayPicker
+      locale={locale === "vi-VN" ? vi : zhCN}
       showOutsideDays={showOutsideDays}
       className={cn("p-1 text-sm", className)}
       classNames={{

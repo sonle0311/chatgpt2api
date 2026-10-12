@@ -1,12 +1,11 @@
 "use client";
 
+import { useI18n } from "@/i18n";
+import { PageHeading } from "@/components/page-heading";
+
 export function SettingsHeader() {
+  const { text, locale } = useI18n();
   return (
-    <section className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-      <div className="space-y-1">
-        <div className="text-xs font-semibold tracking-[0.18em] text-stone-500 uppercase">Settings</div>
-        <h1 className="text-2xl font-semibold tracking-tight">设置</h1>
-      </div>
-    </section>
+    <PageHeading eyebrow="Preferences" title={text("设置")} description={locale === "vi-VN" ? "Tùy chỉnh không gian làm việc, kết nối và quyền truy cập." : "管理工作空间、连接与访问权限。"} />
   );
 }

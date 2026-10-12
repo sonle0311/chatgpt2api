@@ -1,4 +1,6 @@
 "use client";
+import { isImageTimeoutError } from "@/lib/image-error";
+import { useI18n, translateUi } from "@/i18n";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, History, LoaderCircle, Plus, Trash2 } from "lucide-react";
@@ -30,7 +32,6 @@ import {
   type ImageTask,
 } from "@/lib/api";
 import { useAuthGuard } from "@/lib/use-auth-guard";
-import { useI18n } from "@/i18n";
 import { useSettingsStore } from "@/app/settings/store";
 import {
   clearImageConversations,
@@ -129,7 +130,7 @@ function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("读取参考图失败"));
+    reader.onerror = () => reject(new Error(translateUi("读取参考图失败")));
     reader.readAsDataURL(file);
   });
 }
@@ -174,7 +175,7 @@ function buildReferenceImageFromResult(image: StoredImage, fileName: string): St
 async function fetchImageAsFile(url: string, fileName: string) {
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error("读取结果图失败");
+    throw new Error(translateUi("读取结果图失败"));
   }
   const blob = await response.blob();
   return new File([blob], fileName, { type: blob.type || "image/png" });
@@ -213,7 +214,7 @@ function taskDataToStoredImage(image: StoredImage, task: ImageTask): StoredImage
         status: "error",
         taskStatus: undefined,
         progress: undefined,
-        error: "未返回图片数据",
+        error: translateUi("未返回图片数据"),
       };
     }
     return {
@@ -237,7 +238,7 @@ function taskDataToStoredImage(image: StoredImage, task: ImageTask): StoredImage
       status: "error",
       taskStatus: undefined,
       progress: undefined,
-      error: task.error || "生成失败",
+      error: task.error || translateUi("生成失败"),
       durationMs: task.duration_ms,
     };
   }
@@ -292,7 +293,7 @@ function deriveTurnStatus(turn: ImageTurn): Pick<ImageTurn, "status" | "error"> 
     return { status: turn.status === "queued" ? "queued" : "generating", error: undefined };
   }
   if (failedCount > 0) {
-    return { status: "error", error: `其中 ${failedCount} 张未成功生成` };
+    return { status: "error", error: translateUi("其中 {0} 张未成功生成", [failedCount]) };
   }
   if (successCount > 0) {
     return { status: "success", error: undefined };
@@ -410,7 +411,7 @@ async function recoverConversationHistory(items: ImageConversation[]) {
         return {
           ...image,
           status: "error" as const,
-          error: "页面刷新或任务中断，未找到可恢复的任务 ID",
+          error: translateUi("页面刷新或任务中断，未找到可恢复的任务 ID"),
         };
       });
       const candidateTurn = turnChanged ? { ...turn, images } : turn;
@@ -446,7 +447,8 @@ async function recoverConversationHistory(items: ImageConversation[]) {
 
 
 function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
-  const { locale } = useI18n();
+  const { text: translate, locale } = useI18n();
+  const text = translate;
   const didLoadQuotaRef = useRef(false);
   const conversationsRef = useRef<ImageConversation[]>([]);
   const loadCancelledRef = useRef(false);
@@ -479,7 +481,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
   const [conversations, setConversations] = useState<ImageConversation[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
-  const [availableQuota, setAvailableQuota] = useState("加载中...");
+  const [availableQuota, setAvailableQuota] = useState(() => text("加载中..."));
   const [lightboxImages, setLightboxImages] = useState<ImageLightboxItem[]>([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -513,23 +515,23 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
   );
   const deleteConfirmTitle =
     deleteConfirm?.type === "all"
-      ? "清空历史记录"
+      ? translate("清空历史记录")
       : deleteConfirm?.type === "prompt"
-        ? "删除提示词记录"
+        ? translate("删除提示词记录")
         : deleteConfirm?.type === "results"
-          ? "删除生成结果"
+          ? translate("删除生成结果")
           : deleteConfirm?.type === "one"
-            ? "删除对话"
+            ? translate("删除对话")
             : "";
   const deleteConfirmDescription =
     deleteConfirm?.type === "all"
-      ? "确认删除全部图片历史记录吗？删除后无法恢复。"
+      ? translate("确认删除全部图片历史记录吗？删除后无法恢复。")
       : deleteConfirm?.type === "prompt"
-        ? "确认删除这条提示词记录吗？对应生成结果会保留。"
+        ? translate("确认删除这条提示词记录吗？对应生成结果会保留。")
         : deleteConfirm?.type === "results"
-          ? "确认删除这条生成结果吗？对应提示词记录会保留。"
+          ? translate("确认删除这条生成结果吗？对应提示词记录会保留。")
           : deleteConfirm?.type === "one"
-            ? "确认删除这条图片对话吗？删除后无法恢复。"
+            ? translate("确认删除这条图片对话吗？删除后无法恢复。")
             : "";
 
   useEffect(() => {
@@ -638,7 +640,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
           : null) ?? pickFallbackConversationId(normalizedItems);
       setSelectedConversationId(nextSelectedConversationId);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "读取会话记录失败";
+      const message = error instanceof Error ? error.message : translateUi("读取会话记录失败");
       toast.error(message);
     } finally {
       if (!loadCancelledRef.current) {
@@ -728,7 +730,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
       const data = await fetchAccounts();
       setAvailableQuota(formatAvailableQuota(data.items));
     } catch {
-      setAvailableQuota((prev) => (prev === "加载中..." ? "--" : prev));
+      setAvailableQuota((prev) => (prev === text("加载中...") ? "--" : prev));
     }
   }, [isAdmin]);
 
@@ -941,7 +943,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
     try {
       await deleteImageConversation(id);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "删除会话失败";
+      const message = error instanceof Error ? error.message : translate("删除会话失败");
       toast.error(message);
       const items = await listImageConversations();
       conversationsRef.current = items;
@@ -962,7 +964,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
         }
         const images =
           part === "results"
-            ? turn.images.map((image) => ({ id: image.id, status: "error" as const, error: "生成结果已删除" }))
+            ? turn.images.map((image) => ({ id: image.id, status: "error" as const, error: translate("生成结果已删除") }))
             : turn.images;
         const derived =
           part === "results"
@@ -1003,9 +1005,9 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
       setConversations([]);
       setSelectedConversationId(null);
       resetComposer();
-      toast.success("已清空历史记录");
+      toast.success(translate("已清空历史记录"));
     } catch (error) {
-      const message = error instanceof Error ? error.message : "清空历史记录失败";
+      const message = error instanceof Error ? error.message : translate("清空历史记录失败");
       toast.error(message);
     }
   };
@@ -1019,7 +1021,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
     try {
       await renameImageConversation(id, title);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "重命名失败";
+      const message = error instanceof Error ? error.message : translate("重命名失败");
       toast.error(message);
     }
   };
@@ -1079,7 +1081,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
         fileInputRef.current.value = "";
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "读取参考图失败";
+      const message = error instanceof Error ? error.message : translateUi("读取参考图失败");
       toast.error(message);
     }
   }, []);
@@ -1126,9 +1128,9 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
         setReferenceImageFiles((prev) => [...prev, nextReference.file]);
         setImagePrompt("");
         textareaRef.current?.focus();
-        toast.success("已加入当前参考图，继续输入描述即可编辑");
+        toast.success(translateUi("已加入当前参考图，继续输入描述即可编辑"));
       } catch (error) {
-        const message = error instanceof Error ? error.message : "读取结果图失败";
+        const message = error instanceof Error ? error.message : translateUi("读取结果图失败");
         toast.error(message);
       }
     },
@@ -1160,7 +1162,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
       fileInputRef.current.value = "";
     }
     textareaRef.current?.focus();
-    toast.success("已复用这条提示词配置");
+    toast.success(translateUi("已复用这条提示词配置"));
   }, []);
 
   const openLightbox = useCallback((images: ImageLightboxItem[], index: number) => {
@@ -1235,7 +1237,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
           dataUrlToFile(image.dataUrl, image.name || `${activeTurn.id}-${index + 1}.png`, image.type),
         );
         if (activeTurn.mode === "edit" && referenceFiles.length === 0) {
-          throw new Error("未找到可用于继续编辑的参考图");
+          throw new Error(translateUi("未找到可用于继续编辑的参考图"));
         }
 
         const pendingImages = activeTurn.images.filter((image) => image.status === "loading");
@@ -1271,7 +1273,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
               const timeoutTask = taskList.items.find(
                 (task) =>
                   task.status === "error" &&
-                  task.error?.includes("超时") &&
+                  isImageTimeoutError(task.error) &&
                   task.conversation_id &&
                   !retryingTaskIdsRef.has(task.id),
               );
@@ -1280,7 +1282,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
                 setTimeoutRetry({
                   conversationId: timeoutTask.conversation_id,
                   taskId: timeoutTask.id,
-                  taskError: timeoutTask.error || "生图超时",
+                  taskError: timeoutTask.error || translateUi("生图超时"),
                 });
                 // 应用超时错误到对应图片，显示继续等待按钮
                 await applyTasks([timeoutTask]);
@@ -1313,7 +1315,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
 
         await loadQuota();
       } catch (error) {
-        const message = error instanceof Error ? error.message : "生成图片失败";
+        const message = error instanceof Error ? error.message : translateUi("生成图片失败");
         await updateConversation(conversationId, (current) => {
           const conversation = current ?? snapshot;
           return {
@@ -1389,7 +1391,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
       setSelectedConversationId(conversationId);
       await persistConversation(nextConversation);
       void runConversationQueue(conversationId);
-      toast.success("已加入重新生成队列");
+      toast.success(translateUi("已加入重新生成队列"));
     },
     [runConversationQueue],
   );
@@ -1469,9 +1471,9 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
       });
       // 清除重试状态
       setTimeoutRetry(null);
-      toast.info(`已继续等待 ${imageTimeoutRetrySecs} 秒`);
+      toast.info(translateUi("已继续等待 {0} 秒", [imageTimeoutRetrySecs]));
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "续轮询失败";
+      const msg = err instanceof Error ? err.message : translateUi("续轮询失败");
       toast.error(msg);
       setTimeoutRetry(null);
     }
@@ -1550,7 +1552,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
   const handleSubmit = async () => {
     const prompt = imagePrompt.trim();
     if (!prompt) {
-      toast.error("请输入提示词");
+      toast.error(translate("请输入提示词"));
       return;
     }
 
@@ -1604,18 +1606,18 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
 
     const targetStats = getImageConversationStats(baseConversation);
     if (targetStats.running > 0 || targetStats.queued > 1) {
-      toast.success("已加入当前对话队列");
+      toast.success(translate("已加入当前对话队列"));
     } else if (!targetConversation) {
-      toast.success("已创建新对话并开始处理");
+      toast.success(translate("已创建新对话并开始处理"));
     } else {
-      toast.success("已发送到当前对话");
+      toast.success(translate("已发送到当前对话"));
     }
   };
 
   return (
     <>
-      <section className="mx-auto grid h-[calc(100dvh-6.5rem)] min-h-0 w-full max-w-[1380px] grid-cols-1 gap-2 overflow-hidden px-0 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] sm:h-[calc(100dvh-5.25rem)] sm:gap-3 sm:px-3 sm:pb-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-        <div className="hidden h-full min-h-0 border-r border-stone-200/70 pr-3 lg:block">
+      <section className="studio-layout">
+        <div className="studio-history min-h-0">
           <ImageSidebar
             conversations={conversations}
             isLoadingHistory={isLoadingHistory}
@@ -1634,7 +1636,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
             <DialogHeader className="px-6 pt-7 pb-4 sm:px-8">
               <DialogTitle className="flex items-center gap-2 text-xl font-bold tracking-tight">
                 <History className="size-5" />
-                历史记录
+                {text("历史记录")}
               </DialogTitle>
             </DialogHeader>
             <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 sm:px-8">
@@ -1668,14 +1670,14 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
               onClick={() => setIsHistoryOpen(true)}
             >
               <History className="mr-2 size-4" />
-              历史记录 ({conversations.length})
+              {text("历史记录")} ({conversations.length})
             </Button>
             <Button
               className="h-10 rounded-2xl bg-stone-950 text-white shadow-sm"
               onClick={handleCreateDraft}
             >
               <Plus className="size-4" />
-              新建
+              {text("新建")}
             </Button>
             <Button
               variant="outline"
@@ -1695,6 +1697,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
               style={{ contain: "layout style paint" }}
             >
               <ImageResults
+                onUsePrompt={(prompt) => { setImagePrompt(prompt); textareaRef.current?.focus(); }}
                 selectedConversation={selectedConversation}
                 onOpenLightbox={openLightbox}
                 onContinueEdit={handleContinueEdit}
@@ -1712,8 +1715,8 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
             <button
               ref={scrollToLatestBtnRef}
               type="button"
-              aria-label="滚动到最新消息"
-              title="滚动到最新消息"
+              aria-label={text("滚动到最新消息")}
+              title={text("滚动到最新消息")}
               onClick={() => scrollResultsToLatest("smooth")}
               className="absolute bottom-4 left-1/2 z-20 inline-flex size-11 -translate-x-1/2 items-center justify-center rounded-full border border-stone-200 bg-white/95 text-stone-700 shadow-lg shadow-stone-200/60 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 dark:border-white/10 dark:bg-stone-800/95 dark:text-stone-100 dark:shadow-black/40 dark:hover:bg-stone-700"
               style={{ display: "none" }}
@@ -1765,17 +1768,17 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
         <Dialog open onOpenChange={(open) => (!open ? setDeleteConfirm(null) : null)}>
           <DialogContent showCloseButton={false} className="rounded-2xl p-6">
             <DialogHeader className="gap-2">
-              <DialogTitle>{deleteConfirmTitle}</DialogTitle>
+              <DialogTitle>{text(deleteConfirmTitle)}</DialogTitle>
               <DialogDescription className="text-sm leading-6">
-                {deleteConfirmDescription}
+                {text(deleteConfirmDescription)}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
-                取消
+                {text("取消")}
               </Button>
               <Button className="bg-rose-600 text-white hover:bg-rose-700" onClick={() => void handleConfirmDelete()}>
-                确认删除
+                {text("确认删除")}
               </Button>
             </DialogFooter>
           </DialogContent>

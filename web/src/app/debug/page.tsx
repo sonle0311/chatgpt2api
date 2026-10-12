@@ -3,6 +3,8 @@
 import { LoaderCircle } from "lucide-react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useI18n } from "@/i18n";
+import { PageHeading } from "@/components/page-heading";
 import { useAuthGuard } from "@/lib/use-auth-guard";
 
 import { ChatPanel } from "./components/chat-panel";
@@ -21,6 +23,7 @@ const tabs = [
 
 export default function DebugPage() {
   const { isCheckingAuth, session } = useAuthGuard(["admin"]);
+  const { text, locale } = useI18n();
 
   if (isCheckingAuth || !session || session.role !== "admin") {
     return (
@@ -31,11 +34,12 @@ export default function DebugPage() {
   }
 
   return (
-    <Tabs defaultValue="skills" className="mx-auto flex min-h-[calc(100vh-49px)] w-full max-w-[1600px] flex-col gap-4 px-4 pt-3 pb-6 md:px-8">
-      <TabsList variant="line" className="w-full">
+    <Tabs defaultValue="skills" className="mx-auto flex min-h-[calc(100dvh-140px)] w-full min-w-0 flex-col gap-4">
+      <PageHeading eyebrow="Playground" title={text("调试")} description={locale === "vi-VN" ? "Thử nghiệm hội thoại, tìm kiếm và tạo tài liệu trong một nơi." : "在同一空间测试对话、搜索和文档生成。"} />
+      <TabsList variant="line" className="max-w-full overflow-x-auto justify-start">
         {tabs.map(({ value, title }) => (
           <TabsTrigger key={value} value={value}>
-            {title}
+            {text(title)}
           </TabsTrigger>
         ))}
       </TabsList>

@@ -1,4 +1,5 @@
 "use client";
+import { useI18n } from "@/i18n";
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -21,6 +22,7 @@ import {
 } from "@/lib/api";
 
 export function ProxySettingsCard() {
+  const { text: translate } = useI18n();
   const didLoadRef = useRef(false);
   const [settings, setSettings] = useState<ProxySettings>({ enabled: false, url: "" });
   const [formUrl, setFormUrl] = useState("");
@@ -38,7 +40,7 @@ export function ProxySettingsCard() {
       setFormUrl(data.proxy.url);
       setFormEnabled(data.proxy.enabled);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "加载代理配置失败");
+      toast.error(error instanceof Error ? error.message : translate("加载代理配置失败"));
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +60,7 @@ export function ProxySettingsCard() {
 
   const handleSave = async () => {
     if (formEnabled && !formUrl.trim()) {
-      toast.error("启用代理时必须填写代理地址");
+      toast.error(translate("启用代理时必须填写代理地址"));
       return;
     }
     setIsSaving(true);
@@ -70,9 +72,9 @@ export function ProxySettingsCard() {
       setSettings(data.proxy);
       setFormUrl(data.proxy.url);
       setFormEnabled(data.proxy.enabled);
-      toast.success("代理配置已保存");
+      toast.success(translate("代理配置已保存"));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "保存失败");
+      toast.error(error instanceof Error ? error.message : translate("保存失败"));
     } finally {
       setIsSaving(false);
     }
@@ -81,7 +83,7 @@ export function ProxySettingsCard() {
   const handleTest = async () => {
     const candidate = formUrl.trim();
     if (!candidate) {
-      toast.error("请先填写代理地址");
+      toast.error(translate("请先填写代理地址"));
       return;
     }
     setIsTesting(true);
@@ -90,12 +92,12 @@ export function ProxySettingsCard() {
       const data = await testProxy(candidate);
       setTestResult(data.result);
       if (data.result.ok) {
-        toast.success(`代理可用（${data.result.latency_ms} ms，HTTP ${data.result.status}）`);
+        toast.success(translate("代理可用（{0} ms，HTTP {1}）", [data.result.latency_ms, data.result.status]));
       } else {
-        toast.error(`代理不可用：${data.result.error ?? "未知错误"}`);
+        toast.error(translate("代理不可用：{0}", [data.result.error ?? translate("未知错误")]));
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "测试代理失败");
+      toast.error(error instanceof Error ? error.message : translate("测试代理失败"));
     } finally {
       setIsTesting(false);
     }
@@ -110,10 +112,9 @@ export function ProxySettingsCard() {
               <Wifi className="size-5 text-stone-600" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold tracking-tight">上游代理配置</h2>
+              <h2 className="text-lg font-semibold tracking-tight">{translate("上游代理配置")}</h2>
               <p className="text-sm text-stone-500">
-                为 chatgpt.com 的请求配置出网代理，适合国内服务器部署；Sub2API / CPA 请求不受影响。
-              </p>
+                {translate("为 chatgpt.com 的请求配置出网代理，适合国内服务器部署；Sub2API / CPA 请求不受影响。")}</p>
             </div>
           </div>
         </div>
@@ -132,26 +133,24 @@ export function ProxySettingsCard() {
                 onChange={(event) => setFormEnabled(event.target.checked)}
               />
               <div className="space-y-0.5">
-                <div className="text-sm font-medium text-stone-800">启用代理</div>
+                <div className="text-sm font-medium text-stone-800">{translate("启用代理")}</div>
                 <div className="text-sm text-stone-500">
-                  关闭后 chatgpt.com 请求会直连。保存后立即生效，无需重启。
-                </div>
+                  {translate("关闭后 chatgpt.com 请求会直连。保存后立即生效，无需重启。")}</div>
               </div>
             </label>
 
             <div className="space-y-2">
               <label className="flex items-center gap-1.5 text-sm font-medium text-stone-700">
                 <PlugZap className="size-3.5" />
-                代理地址
-              </label>
+                {translate("代理地址")}</label>
               <Input
                 value={formUrl}
                 onChange={(event) => setFormUrl(event.target.value)}
-                placeholder="http://user:pass@host:port 或 socks5://host:port"
+                placeholder={translate("http://user:pass@host:port 或 socks5://host:port")}
                 className="h-11 rounded-xl border-stone-200 bg-white font-mono text-xs"
               />
               <div className="text-xs text-stone-400">
-                支持 <code className="font-mono">http / https / socks4 / socks5 / socks5h</code>。
+                {translate("支持")}<code className="font-mono">http / https / socks4 / socks5 / socks5h</code>。
               </div>
             </div>
 
@@ -165,10 +164,10 @@ export function ProxySettingsCard() {
               >
                 {testResult.ok ? (
                   <>
-                    代理可用：HTTP {testResult.status}，用时 {testResult.latency_ms} ms
+                    {translate("代理可用：HTTP {0}，用时 {1} ms", [testResult.status, testResult.latency_ms])}
                   </>
                 ) : (
-                  <>代理不可用：{testResult.error ?? "未知错误"}（用时 {testResult.latency_ms} ms）</>
+                  <>{translate("代理不可用：{0}（用时 {1} ms）", [testResult.error ?? translate("未知错误"), testResult.latency_ms])}</>
                 )}
               </div>
             ) : null}
@@ -180,8 +179,7 @@ export function ProxySettingsCard() {
                 disabled={isSaving || !dirty}
               >
                 {isSaving ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}
-                保存
-              </Button>
+                {translate("保存")}</Button>
               <Button
                 variant="outline"
                 className="h-10 rounded-xl border-stone-200 bg-white px-5 text-stone-700"
@@ -189,8 +187,7 @@ export function ProxySettingsCard() {
                 disabled={isTesting}
               >
                 {isTesting ? <LoaderCircle className="size-4 animate-spin" /> : <PlugZap className="size-4" />}
-                测试连通
-              </Button>
+                {translate("测试连通")}</Button>
             </div>
           </div>
         )}
